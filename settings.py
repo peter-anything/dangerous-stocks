@@ -79,9 +79,9 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',  # 数据库引擎
         'NAME': 'smart_stocks',  # 数据库名，先前创建的
         'USER': 'root',  # 用户名，可以自己创建用户
-        'PASSWORD': 'root',  # 密码
+        'PASSWORD': 'abc123_',  # 密码
         'HOST': '192.168.1.102',  # mysql服务所在的主机ip
-        'PORT': '3306',  # mysql服务端口
+        'PORT': '13986',  # mysql服务端口
     }
 }
 
@@ -151,3 +151,10 @@ CORS_ALLOW_HEADERS = (
 )
 
 TIME_ZONE = 'Asia/Shanghai'
+
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, "static"), # 首选project静态文件搜寻路径
+    '/var/www/static/', # 第二选project静态文件搜寻路径，还可以有第三选，第四选……
+)
+
+print(BASE_DIR)
