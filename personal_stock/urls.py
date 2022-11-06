@@ -5,5 +5,8 @@ from . import views
 
 urlpatterns = [
     url(r'^$', views.index),
-    url(r'^stocks/$', views.stock_list, name='article_page'),
+    url(r'^my_stocks/$', views.my_stock_list),
+    url(r'^my_stocks/create/$', views.my_stock_create),
+    url(r'^all_stock_fundamentals/$', views.all_stock_fundamental_list),
+    url(r'^all_stocks/$', views.all_stock_list),
 ]

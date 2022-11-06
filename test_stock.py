@@ -13,7 +13,8 @@ my_stocks = {
 
 
 while True:
-    real_result = quotation.real(list(my_stocks.keys()))
+    real_result = quotation.real(['002119'])
+    print(real_result)
     for stock, detail in real_result.items():
         print('stock: %s' % stock)
         print(detail['name'])
@@ -25,3 +26,5 @@ while True:
             print("error =================================")
     sleep(10)
 
+ressult = quotation.market_snapshot(prefix=True)
+print(ressult)
