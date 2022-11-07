@@ -53,5 +53,8 @@ class MyStock(models.Model):
     sellReason = models.CharField(max_length=128)  # 转手亮
     visible = models.IntegerField(default=1)
 
+    lowestPrice = models.FloatField()
+    highestPrice = models.FloatField
+
     class Meta:
         db_table = "my_stock"

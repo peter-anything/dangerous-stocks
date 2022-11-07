@@ -157,4 +157,10 @@ STATICFILES_DIRS = (
     '/var/www/static/', # 第二选project静态文件搜寻路径，还可以有第三选，第四选……
 )
 
-print(BASE_DIR)
+GOLDEN_RATIOS = [
+    0.191,
+    0.382,
+    0.5,
+    0.618,
+    0.809
+]

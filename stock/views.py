@@ -5,6 +5,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 
 from current_stocks import my_stocks
+from settings import GOLDEN_RATIOS
 from stock.models import Stock, StockFundamental, MyStock
 from stock.serializer import StockFundamentalSerializer, StockSerializer
 
@@ -97,18 +98,22 @@ def my_stock_list(request):
 
     result = []
     for stock_code, detail in real_result.items():
+        stock = stock_map[stock_code]
+        lowest = stock.lowestPrice
+        pressure_prices = [round(lowest * (1 + ratio), 2) for ratio in GOLDEN_RATIOS]
+        stock.lowestPrice
         result.append({
             'code': stock_code,
             'name': detail['name'],
-            'buyPrice': stock_map[stock_code].buyPrice,
-            'safePrice': stock_map[stock_code].safePrice,
+            'buyPrice': stock.buyPrice,
+            'safePrice': stock.safePrice,
             'now': detail['now'],
             'open': detail['open'],
             'high': detail['high'],
             'low': detail['low'],
             'turnoverRate': detail['turnover'],
-            'detailUrl': 'http://stockpage.10jqka.com.cn/%s/' % stock_code
-
+            'pressurePrices': pressure_prices,
+            'detailUrl': 'http://stockpage.10jqka.com.cn/%s/' % stock_code,
         })
     data = {
         "code": 0,
