@@ -10,9 +10,9 @@ RUN pip install -U -i https://pypi.tuna.tsinghua.edu.cn/simple --trusted-host py
 
 ADD *.py /codes/
 ADD stock/ /codes/stock/
-ADD static /codes/static/
 ADD start.sh /codes/
 
 WORKDIR /codes
 
 CMD ["/bin/bash", "start.sh"]
+
