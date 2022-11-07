@@ -1,0 +1,5 @@
+django-cors-headers==3.13.0
+djangorestframework==3.14.0
+mysqlclient
+django==3.2.10
+easyquotation

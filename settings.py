@@ -37,7 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'corsheaders',
     'rest_framework',
-    'personal_stock'
+    'stock'
 ]
 
 MIDDLEWARE = [
@@ -56,7 +56,7 @@ ROOT_URLCONF = 'urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'personal_stock/templates')],
+        'DIRS': [os.path.join(BASE_DIR, 'stock/templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -80,7 +80,7 @@ DATABASES = {
         'NAME': 'smart_stocks',  # 数据库名，先前创建的
         'USER': 'root',  # 用户名，可以自己创建用户
         'PASSWORD': 'abc123_',  # 密码
-        'HOST': '192.168.1.102',  # mysql服务所在的主机ip
+        'HOST': 'localhost',  # mysql服务所在的主机ip
         'PORT': '13986',  # mysql服务端口
     }
 }
