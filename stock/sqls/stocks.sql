@@ -26,6 +26,7 @@ CREATE TABLE stock_fundamental (
     open float,
     high float,
     low float,
+    close float,
     pe float,
     turnoverRate float,
     turnoverVolume float,

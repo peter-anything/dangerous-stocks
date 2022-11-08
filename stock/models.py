@@ -31,6 +31,7 @@ class StockFundamental(models.Model):
     open = models.FloatField()  # 开盘价
     high = models.FloatField()  # 最高价
     low = models.FloatField()  # 最低价
+    close = models.FloatField()
     pe = models.FloatField()  # 市盈率
     turnoverRate = models.FloatField()  # 转手率
     turnoverVolume = models.IntegerField()  # 转手亮

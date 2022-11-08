@@ -4,7 +4,6 @@ import easyquotation
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 
-from current_stocks import my_stocks
 from settings import GOLDEN_RATIOS
 from stock.models import Stock, StockFundamental, MyStock
 from stock.serializer import StockFundamentalSerializer, StockSerializer
@@ -101,7 +100,6 @@ def my_stock_list(request):
         stock = stock_map[stock_code]
         lowest = stock.lowestPrice
         pressure_prices = [round(lowest * (1 + ratio), 2) for ratio in GOLDEN_RATIOS]
-        stock.lowestPrice
         result.append({
             'code': stock_code,
             'name': detail['name'],
