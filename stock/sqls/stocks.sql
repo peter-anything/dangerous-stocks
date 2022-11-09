@@ -31,7 +31,8 @@ CREATE TABLE stock_fundamental (
     turnoverRate float,
     turnoverVolume float,
     tradingMoney float,
-    createdAt TIMESTAMP
+    createdAt TIMESTAMP,
+    growthRate float,
     index stock_fundamental_code_index(code)
 );
 

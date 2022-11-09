@@ -100,6 +100,9 @@ class Command(BaseCommand):
 
 
     def handle(self, *args, **options):
-        # self.generate_data(0)
         # self.generate_data(-1)
+        # self.generate_data(-2)
+        # self.generate_data(-5)
         self.save_to_db(-1)
+        self.save_to_db(-2)
+        self.save_to_db(-5)

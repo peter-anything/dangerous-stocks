@@ -37,9 +37,10 @@ class StockFundamental(models.Model):
     turnoverVolume = models.IntegerField()  # 转手亮
     tradingMoney = models.FloatField()  # 交易量
     createdAt = models.DateTimeField()
+    growthRate = models.FloatField()
 
     class Meta:
-        db_table = "stock_fundamental"
+        db_table = "stock_fundamental1"
 
 
 class MyStock(models.Model):
