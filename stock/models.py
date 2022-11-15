@@ -40,7 +40,7 @@ class StockFundamental(models.Model):
     growthRate = models.FloatField()
 
     class Meta:
-        db_table = "stock_fundamental1"
+        db_table = "stock_fundamental"
 
 
 class MyStock(models.Model):
