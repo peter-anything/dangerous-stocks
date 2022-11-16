@@ -89,19 +89,16 @@ def my_stock_list(request):
     quotation = easyquotation.use('tencent')  # 新浪 ['sina'] 腾讯 ['tencent', 'qq']
 
     my_stocks = MyStock.objects.order_by('-visible', '-id').all()
-    stock_map = {}
-    for stock in my_stocks:
-        stock_map[stock.code] = stock
     codes = [stock.code for stock in my_stocks]
     real_result = quotation.real(codes)
 
     result = []
-    for stock_code, detail in real_result.items():
-        stock = stock_map[stock_code]
+    for stock in my_stocks:
+        detail = real_result[stock.code]
         lowest = stock.lowestPrice
         pressure_prices = [round(lowest * (1 + ratio), 2) for ratio in GOLDEN_RATIOS]
         result.append({
-            'code': stock_code,
+            'code': stock.code,
             'name': detail['name'],
             'buyPrice': stock.buyPrice,
             'safePrice': stock.safePrice,
@@ -113,7 +110,7 @@ def my_stock_list(request):
             'turnoverRate': detail['turnover'],
             'pressurePrices': pressure_prices,
             'buyDate': stock.buyDate.strftime("%Y-%m-%d %H:%M:%S"),
-            'detailUrl': 'http://stockpage.10jqka.com.cn/%s/' % stock_code,
+            'detailUrl': 'http://stockpage.10jqka.com.cn/%s/' % stock.code,
         })
     data = {
         "code": 0,
