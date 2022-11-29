@@ -12,10 +12,6 @@ class Command(BaseCommand):
     help = 'test'
 
     def handle(self, *args, **options):
-        all_stocks = Stock.objects \
-            .exclude(code__istartswith='300').exclude(code__istartswith='688').exclude(name__startswith='ST') \
-            .filter(market='A股')
-
         now = datetime.now()
         bid_end_time1 = now - timedelta(hours=now.hour, minutes=now.minute, seconds=now.second,
                                         microseconds=now.microsecond) + timedelta(hours=9, minutes=15, seconds=0)
@@ -23,6 +19,10 @@ class Command(BaseCommand):
                                         microseconds=now.microsecond) + timedelta(hours=9, minutes=20, seconds=0)
         bid_end_time3 = now - timedelta(hours=now.hour, minutes=now.minute, seconds=now.second,
                                         microseconds=now.microsecond) + timedelta(hours=9, minutes=25, seconds=0)
+        if now < bid_end_time1:
+            print('当前时间：%s, 时间未到' % now.strftime("%Y-%m-%d %H:%M:%S"))
+            return
+
         if bid_end_time1 <= now < bid_end_time2:
             bids = BidHistory.objects.filter(bidTime__gte=bid_end_time1, bidTime__lt=bid_end_time2)
             if len(bids) > 0:
@@ -38,6 +38,10 @@ class Command(BaseCommand):
             if len(bids) > 0:
                 print('当前时间：%s, 此时间段已生成数据' % now.strftime("%Y-%m-%d %H:%M:%S"))
                 return
+
+        all_stocks = Stock.objects \
+            .exclude(code__istartswith='300').exclude(code__istartswith='688').exclude(name__startswith='ST') \
+            .filter(market='A股')
 
         quotation = easyquotation.use('tencent')
         stock_codes = [stock_fundamental.code for stock_fundamental in all_stocks]
