@@ -12,6 +12,9 @@ ADD *.py /codes/
 ADD stock/ /codes/stock/
 ADD start.sh /codes/
 
+ENV TZ=Asia/Shanghai
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
 WORKDIR /codes
 
 CMD ["/bin/bash", "start.sh"]
