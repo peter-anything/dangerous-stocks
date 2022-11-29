@@ -1,11 +1,12 @@
 import json
+from datetime import datetime, timedelta
 
 import easyquotation
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 
 from settings import GOLDEN_RATIOS
-from stock.models import Stock, StockFundamental, MyStock
+from stock.models import Stock, StockFundamental, MyStock, BidHistory, BidSentimentHistory
 from stock.serializer import StockFundamentalSerializer, StockSerializer
 
 
@@ -143,4 +144,105 @@ def my_stock_create(request):
         my_stock.save()
 
     response = HttpResponse(json.dumps({}))
+    return response
+
+
+def recommend_list(request):
+    now = datetime.now()
+    bid_end_time = now - timedelta(hours=now.hour, minutes=now.minute, seconds=now.second,
+                                   microseconds=now.microsecond) + timedelta(hours=9, minutes=25, seconds=1)
+    bid_histories = BidHistory.objects.filter(bidTime__gte=bid_end_time, openHigh__gt=2).order_by('openHigh',
+                                                                                                  'industry')
+
+    records = []
+    for bid_history in bid_histories:
+        records.append({
+            'code': bid_history.code,
+            'name': bid_history.name,
+            'type': bid_history.type,
+            'industry': bid_history.industry,
+            'concepts': '/'.join(json.loads(bid_history.concepts)),
+            'openHigh': bid_history.openHigh,
+            'open': bid_history.open,
+            'close': bid_history.close,
+            'now': bid_history.now,
+            'openHighRate': (bid_history.open - bid_history.close) * 100 / bid_history.close,
+            'detailUrl': 'http://stockpage.10jqka.com.cn/%s/' % bid_history.code,
+            'closeMoney': '%d.2亿' % bid_history.bid1Money
+        })
+
+    records.sort(key=lambda x: x['openHighRate'])
+
+    data = {
+        "code": 0,
+        "data": {
+            "list": records
+        }
+    }
+    response = HttpResponse(json.dumps(data, ensure_ascii=False))
+    return response
+
+
+def recommend_stock_list(request):
+    now = datetime.now()
+    bid_end_time = now - timedelta(hours=now.hour, minutes=now.minute, seconds=now.second,
+                                   microseconds=now.microsecond) + timedelta(hours=9, minutes=25, seconds=1)
+    bid_histories = BidHistory.objects.filter(bidTime__gte=bid_end_time, openHigh__gt=2).order_by('openHigh',
+                                                                                                  'industry')
+
+    records = []
+    for bid_history in bid_histories:
+        records.append({
+            'code': bid_history.code,
+            'name': bid_history.name,
+            'type': bid_history.type,
+            'industry': bid_history.industry,
+            'concepts': '/'.join(json.loads(bid_history.concepts)),
+            'openHigh': bid_history.openHigh,
+            'open': bid_history.open,
+            'close': bid_history.close,
+            'now': bid_history.now,
+            'openHighRate': (bid_history.open - bid_history.close) * 100 / bid_history.close,
+            'detailUrl': 'http://stockpage.10jqka.com.cn/%s/' % bid_history.code,
+            'closeMoney': '%d.2亿' % bid_history.bid1Money
+        })
+
+    records.sort(key=lambda x: x['openHighRate'])
+
+    data = {
+        "code": 0,
+        "data": {
+            "list": records
+        }
+    }
+    response = HttpResponse(json.dumps(data, ensure_ascii=False))
+    return response
+
+
+def recommend_industry_list(request):
+    now = datetime.now()
+    bid_end_time1 = now - timedelta(hours=now.hour, minutes=now.minute, seconds=now.second,
+                                    microseconds=now.microsecond) + timedelta(hours=9, minutes=15, seconds=0)
+    bid_end_time2 = now - timedelta(hours=now.hour, minutes=now.minute, seconds=now.second,
+                                    microseconds=now.microsecond) + timedelta(hours=9, minutes=20, seconds=0)
+    bid_end_time3 = now - timedelta(hours=now.hour, minutes=now.minute, seconds=now.second,
+                                    microseconds=now.microsecond) + timedelta(hours=9, minutes=25, seconds=0)
+    sentimental_histories = BidSentimentHistory.objects.filter(bidTime__gte=bid_end_time1)\
+        .order_by('industry', '-count')
+
+    records = []
+    for sentimental_history in sentimental_histories:
+        records.append({
+            'industry': sentimental_history.industry,
+            'count': sentimental_history.count,
+            'bidTime': sentimental_history.bidTime.strftime("%Y-%m-%d %H:%M:%S"),
+        })
+
+    data = {
+        "code": 0,
+        "data": {
+            "list": records
+        }
+    }
+    response = HttpResponse(json.dumps(data, ensure_ascii=False))
     return response
