@@ -1,5 +1,5 @@
 import csv
-import datetime
+from datetime import datetime, timedelta
 
 from django.core.management.base import BaseCommand, CommandError
 
@@ -12,19 +12,42 @@ class Command(BaseCommand):
     help = 'test'
 
     def handle(self, *args, **options):
-        all_stock_fundamentals = StockFundamental.objects\
-            .filter(createdAt__gte=datetime.datetime.now() + datetime.timedelta(days=-1)) \
-            .exclude(code__istartswith='300').exclude(code__istartswith='688').exclude(name__startswith='ST')
+        all_stocks = Stock.objects \
+            .exclude(code__istartswith='300').exclude(code__istartswith='688').exclude(name__startswith='ST') \
+            .filter(market='A股')
+
+        now = datetime.now()
+        bid_end_time1 = now - timedelta(hours=now.hour, minutes=now.minute, seconds=now.second,
+                                        microseconds=now.microsecond) + timedelta(hours=9, minutes=15, seconds=0)
+        bid_end_time2 = now - timedelta(hours=now.hour, minutes=now.minute, seconds=now.second,
+                                        microseconds=now.microsecond) + timedelta(hours=9, minutes=20, seconds=0)
+        bid_end_time3 = now - timedelta(hours=now.hour, minutes=now.minute, seconds=now.second,
+                                        microseconds=now.microsecond) + timedelta(hours=9, minutes=25, seconds=0)
+        if bid_end_time1 <= now < bid_end_time2:
+            bids = BidHistory.objects.filter(bidTime__gte=bid_end_time1, bidTime__lt=bid_end_time2)
+            if len(bids) > 0:
+                print('当前时间：%s, 此时间段已生成数据' % now.strftime("%Y-%m-%d %H:%M:%S"))
+                return
+        elif bid_end_time2 <= now < bid_end_time3:
+            bids = BidHistory.objects.filter(bidTime__gte=bid_end_time2, bidTime__lt=bid_end_time3)
+            if len(bids) > 0:
+                print('当前时间：%s, 此时间段已生成数据' % now.strftime("%Y-%m-%d %H:%M:%S"))
+                return
+        else:
+            bids = BidHistory.objects.filter(bidTime__gte=bid_end_time3)
+            if len(bids) > 0:
+                print('当前时间：%s, 此时间段已生成数据' % now.strftime("%Y-%m-%d %H:%M:%S"))
+                return
 
         quotation = easyquotation.use('tencent')
-        stock_codes = [stock_fundamental.code for stock_fundamental in all_stock_fundamentals]
+        stock_codes = [stock_fundamental.code for stock_fundamental in all_stocks]
         stocks = Stock.objects.filter(code__in=[str(stock_code) for stock_code in stock_codes])
         stock_map = {}
         for stock in stocks:
             stock_map[stock.code] = stock
         real_result = quotation.real([str(stock_code) for stock_code in stock_codes])
         bid_histories = []
-        now = datetime.datetime.now()
+        now = datetime.now()
         industry_sentiment_map = {}
         for stock_code, detail in real_result.items():
             bid_price = detail['bid1']
@@ -75,4 +98,3 @@ class Command(BaseCommand):
             bid_sentiment_histories.append(bid_sentiment_history)
 
         BidSentimentHistory.objects.bulk_create(bid_sentiment_histories)
-

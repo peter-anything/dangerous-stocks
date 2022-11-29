@@ -146,43 +146,6 @@ def my_stock_create(request):
     response = HttpResponse(json.dumps({}))
     return response
 
-
-def recommend_list(request):
-    now = datetime.now()
-    bid_end_time = now - timedelta(hours=now.hour, minutes=now.minute, seconds=now.second,
-                                   microseconds=now.microsecond) + timedelta(hours=9, minutes=25, seconds=1)
-    bid_histories = BidHistory.objects.filter(bidTime__gte=bid_end_time, openHigh__gt=2).order_by('openHigh',
-                                                                                                  'industry')
-
-    records = []
-    for bid_history in bid_histories:
-        records.append({
-            'code': bid_history.code,
-            'name': bid_history.name,
-            'type': bid_history.type,
-            'industry': bid_history.industry,
-            'concepts': '/'.join(json.loads(bid_history.concepts)),
-            'openHigh': bid_history.openHigh,
-            'open': bid_history.open,
-            'close': bid_history.close,
-            'now': bid_history.now,
-            'openHighRate': (bid_history.open - bid_history.close) * 100 / bid_history.close,
-            'detailUrl': 'http://stockpage.10jqka.com.cn/%s/' % bid_history.code,
-            'closeMoney': '%d.2亿' % bid_history.bid1Money
-        })
-
-    records.sort(key=lambda x: x['openHighRate'])
-
-    data = {
-        "code": 0,
-        "data": {
-            "list": records
-        }
-    }
-    response = HttpResponse(json.dumps(data, ensure_ascii=False))
-    return response
-
-
 def recommend_stock_list(request):
     now = datetime.now()
     bid_end_time = now - timedelta(hours=now.hour, minutes=now.minute, seconds=now.second,
