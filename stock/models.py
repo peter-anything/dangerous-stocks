@@ -8,6 +8,18 @@ class Stock(models.Model):
     market = models.CharField(max_length=64)  # 名称
     category = models.CharField(max_length=64)  # 名称
     type = models.CharField(max_length=64)  # 名称
+    industry = models.CharField(max_length=64)
+    concepts = models.CharField(max_length=1024)
+    marketingTime = models.CharField(max_length=64)
+    marketingPlace = models.CharField(max_length=64)
+    issuePrice = models.CharField(max_length=8)
+    underWriter = models.CharField(max_length=64)
+    regCapital = models.CharField(max_length=64)
+    regPlace = models.CharField(max_length=64)
+    regOfficePlace = models.CharField(max_length=64)
+    description = models.CharField(max_length=1024)
+    mainBusiness = models.CharField(max_length=1024)
+    establishTime = models.CharField(max_length=64)
 
     class Meta:
         db_table = "stock"
@@ -37,6 +49,7 @@ class StockFundamental(models.Model):
     turnoverVolume = models.IntegerField()  # 转手亮
     tradingMoney = models.FloatField()  # 交易量
     createdAt = models.DateTimeField()
+    growthRate = models.FloatField()
 
     class Meta:
         db_table = "stock_fundamental"
