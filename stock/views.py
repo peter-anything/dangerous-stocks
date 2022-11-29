@@ -88,20 +88,17 @@ def all_stock_fundamental_list(request):
 def my_stock_list(request):
     quotation = easyquotation.use('tencent')  # 新浪 ['sina'] 腾讯 ['tencent', 'qq']
 
-    my_stocks = MyStock.objects.all()
-    stock_map = {}
-    for stock in my_stocks:
-        stock_map[stock.code] = stock
+    my_stocks = MyStock.objects.order_by('-visible', '-id').all()
     codes = [stock.code for stock in my_stocks]
     real_result = quotation.real(codes)
 
     result = []
-    for stock_code, detail in real_result.items():
-        stock = stock_map[stock_code]
+    for stock in my_stocks:
+        detail = real_result[stock.code]
         lowest = stock.lowestPrice
         pressure_prices = [round(lowest * (1 + ratio), 2) for ratio in GOLDEN_RATIOS]
         result.append({
-            'code': stock_code,
+            'code': stock.code,
             'name': detail['name'],
             'buyPrice': stock.buyPrice,
             'safePrice': stock.safePrice,
@@ -109,9 +106,11 @@ def my_stock_list(request):
             'open': detail['open'],
             'high': detail['high'],
             'low': detail['low'],
+            'needAlert': ((detail['now'] - detail['open']) * 100 / detail['open']) > 2.9,
             'turnoverRate': detail['turnover'],
             'pressurePrices': pressure_prices,
-            'detailUrl': 'http://stockpage.10jqka.com.cn/%s/' % stock_code,
+            'buyDate': stock.buyDate.strftime("%Y-%m-%d %H:%M:%S"),
+            'detailUrl': 'http://stockpage.10jqka.com.cn/%s/' % stock.code,
         })
     data = {
         "code": 0,
@@ -128,7 +127,6 @@ def my_stock_create(request):
     params = json.loads(body_unicode)
 
     code = params.get('code')
-    print(code)
     buyPrice = params.get('buyPrice')
     safePrice = params.get('safePrice')
     buyReason = params.get('buyReason')

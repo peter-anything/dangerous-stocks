@@ -50,6 +50,8 @@ class Command(BaseCommand):
                 stockFundamental.close = detail['now']
                 stockFundamental.pe = detail['PE']
                 stockFundamental.createdAt = zero_today
+                if detail['open'] > 0 and detail['close'] > 0:
+                    stockFundamental.growthRate = (detail['close'] - detail['open']) * 100 / detail['open']
                 stock_fundamentals.append(stockFundamental)
 
         StockFundamental.objects.bulk_create(stock_fundamentals)
