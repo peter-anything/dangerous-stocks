@@ -74,6 +74,56 @@ class MyStock(models.Model):
         db_table = "my_stock"
 
 
+class DailyLimitLevel1Stock(models.Model):
+    # id = models.AutoField(primary_key=True, default=1)  # id 会自动创建,可以手动写入
+    code = models.CharField(max_length=16)  # 代码
+    name = models.CharField(max_length=64)  # 名称
+    now = models.FloatField()
+    open = models.FloatField()  # 市值
+    close = models.FloatField()  # 流值
+    buyPrice = models.FloatField()  # 市值
+    buyDate = models.DateTimeField()  # 流值
+    safePrice = models.FloatField()
+    buyReason = models.CharField(max_length=256)  # 转手率
+    sellPrice = models.FloatField()
+    sellReason = models.CharField(max_length=128)  # 转手亮
+    visible = models.IntegerField(default=1)
+    type = models.CharField(max_length=64)  # 名称
+    industry = models.CharField(max_length=64)
+    concepts = models.CharField(max_length=1024)
+    lowestPrice = models.FloatField()
+    highestPrice = models.FloatField()
+    growthRate = models.FloatField()
+
+    class Meta:
+        db_table = "daily_limit_level1_stock"
+
+
+class DailyLimitLevel2Stock(models.Model):
+    # id = models.AutoField(primary_key=True, default=1)  # id 会自动创建,可以手动写入
+    code = models.CharField(max_length=16)  # 代码
+    name = models.CharField(max_length=64)  # 名称
+    now = models.FloatField()
+    open = models.FloatField()  # 市值
+    close = models.FloatField()  # 流值
+    buyPrice = models.FloatField()  # 市值
+    buyDate = models.DateTimeField()  # 流值
+    safePrice = models.FloatField()
+    buyReason = models.CharField(max_length=256)  # 转手率
+    sellPrice = models.FloatField()
+    sellReason = models.CharField(max_length=128)  # 转手亮
+    visible = models.IntegerField(default=1)
+    type = models.CharField(max_length=64)  # 名称
+    industry = models.CharField(max_length=64)
+    concepts = models.CharField(max_length=1024)
+    lowestPrice = models.FloatField()
+    highestPrice = models.FloatField()
+    growthRate = models.FloatField()
+
+    class Meta:
+        db_table = "daily_limit_level2_stock"
+
+
 class BidHistory(models.Model):
     # id = models.AutoField(primary_key=True, default=1)  # id 会自动创建,可以手动写入
     code = models.CharField(max_length=16)  # 代码
