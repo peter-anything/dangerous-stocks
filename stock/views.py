@@ -6,8 +6,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 
 from settings import GOLDEN_RATIOS
-from stock.models import Stock, StockFundamental, MyStock, BidHistory, BidSentimentHistory, \
-    DailyLimitLevel1Stock
+from stock.models import Stock, StockFundamental, MyStock, BidHistory, BidSentimentHistory, DailyLimitLevel1Stock
 from stock.serializer import StockFundamentalSerializer, StockSerializer
 
 
@@ -225,11 +224,11 @@ def daily_limit_stocks(request):
     quotation = easyquotation.use('tencent')  # 新浪 ['sina'] 腾讯 ['tencent', 'qq']
 
     all_daily_limit_stocks = DailyLimitLevel1Stock.objects.order_by('-visible', '-id').all()
-    codes = [stock.code for stock in my_stocks]
+    codes = [stock.code for stock in all_daily_limit_stocks]
     real_result = quotation.real(codes)
 
     result = []
-    for stock in my_stocks:
+    for stock in all_daily_limit_stocks:
         detail = real_result[stock.code]
         lowest = stock.lowestPrice
         pressure_prices = [round(lowest * (1 + ratio), 2) for ratio in GOLDEN_RATIOS]
