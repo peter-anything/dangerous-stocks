@@ -14,11 +14,11 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         now = datetime.now()
         bid_end_time1 = now - timedelta(hours=now.hour, minutes=now.minute, seconds=now.second,
-                                        microseconds=now.microsecond) + timedelta(hours=9, minutes=15, seconds=0)
+                                        microseconds=now.microsecond) + timedelta(hours=9, minutes=15, seconds=20)
         bid_end_time2 = now - timedelta(hours=now.hour, minutes=now.minute, seconds=now.second,
-                                        microseconds=now.microsecond) + timedelta(hours=9, minutes=20, seconds=0)
+                                        microseconds=now.microsecond) + timedelta(hours=9, minutes=20, seconds=20)
         bid_end_time3 = now - timedelta(hours=now.hour, minutes=now.minute, seconds=now.second,
-                                        microseconds=now.microsecond) + timedelta(hours=9, minutes=25, seconds=0)
+                                        microseconds=now.microsecond) + timedelta(hours=9, minutes=25, seconds=20)
         if now < bid_end_time1:
             print('当前时间：%s, 时间未到' % now.strftime("%Y-%m-%d %H:%M:%S"))
             return

@@ -131,6 +131,7 @@ def my_stock_create(request):
     buyPrice = params.get('buyPrice')
     safePrice = params.get('safePrice')
     buyReason = params.get('buyReason')
+    lowestPrice = params.get('lowestPrice')
 
     stock = Stock.objects.filter(code=code).first()
     if stock:
@@ -141,10 +142,12 @@ def my_stock_create(request):
         my_stock.buyPrice = buyPrice
         my_stock.safePrice = safePrice
         my_stock.buyReason = buyReason
+        my_stock.lowestPrice = lowestPrice
         my_stock.save()
 
     response = HttpResponse(json.dumps({}))
     return response
+
 
 def recommend_stock_list(request):
     now = datetime.now()
@@ -152,25 +155,31 @@ def recommend_stock_list(request):
                                    microseconds=now.microsecond) + timedelta(hours=9, minutes=25, seconds=1)
     bid_histories = BidHistory.objects.filter(bidTime__gte=bid_end_time, openHigh__gt=2).order_by('openHigh',
                                                                                                   'industry')
+    codes = [bid_history.code for bid_history in bid_histories]
 
+    quotation = easyquotation.use('tencent')  # 新浪 ['sina'] 腾讯 ['tencent', 'qq']
+    real_result = quotation.real(codes)
     records = []
     for bid_history in bid_histories:
+        now_price = real_result[bid_history.code]['now']
         records.append({
             'code': bid_history.code,
             'name': bid_history.name,
             'type': bid_history.type,
             'industry': bid_history.industry,
-            'concepts': '/'.join(json.loads(bid_history.concepts)),
+            'concepts': '/'.join(json.loads(bid_history.concepts)) if bid_history.concepts else '',
             'openHigh': bid_history.openHigh,
             'open': bid_history.open,
             'close': bid_history.close,
+            'marketValue': real_result[bid_history.code]['总市值'],
             'now': bid_history.now,
             'openHighRate': (bid_history.open - bid_history.close) * 100 / bid_history.close,
+            'nowGrowthRate': (now_price - bid_history.close) * 100 / bid_history.close,
             'detailUrl': 'http://stockpage.10jqka.com.cn/%s/' % bid_history.code,
             'closeMoney': '%d.2亿' % bid_history.bid1Money
         })
 
-    records.sort(key=lambda x: x['openHighRate'])
+    records.sort(key=lambda x: x['nowGrowthRate'])
 
     data = {
         "code": 0,
@@ -190,7 +199,7 @@ def recommend_industry_list(request):
                                     microseconds=now.microsecond) + timedelta(hours=9, minutes=20, seconds=0)
     bid_end_time3 = now - timedelta(hours=now.hour, minutes=now.minute, seconds=now.second,
                                     microseconds=now.microsecond) + timedelta(hours=9, minutes=25, seconds=0)
-    sentimental_histories = BidSentimentHistory.objects.filter(bidTime__gte=bid_end_time1)\
+    sentimental_histories = BidSentimentHistory.objects.filter(bidTime__gte=bid_end_time1) \
         .order_by('industry', '-count')
 
     records = []
