@@ -64,24 +64,29 @@ class Command(BaseCommand):
                 bid_history.now = detail['now']
                 bid_history.open = detail['open']
                 bid_history.close = detail['close']
-                if (bid_history.open - bid_history.close) * 100 / bid_history.close > 9:
-                    bid_history.openHigh = 1
-                elif (bid_history.open - bid_history.close) * 100 / bid_history.close > 5:
-                    bid_history.openHigh = 2
-                elif (bid_history.open - bid_history.close) * 100 / bid_history.close > 3:
-                    bid_history.openHigh = 3
-                else:
-                    bid_history.openHigh = 4
 
-                bid_history.bidTime = now
-                bid_history.bid1Money = detail['bid1'] * detail['bid1_volume'] / 10000000
-                bid_history.bid2Money = detail['bid2'] * detail['bid2_volume'] / 10000000
-                bid_history.bid3Money = detail['bid3'] * detail['bid3_volume'] / 10000000
-                bid_history.bid4Money = detail['bid4'] * detail['bid4_volume'] / 10000000
-                bid_history.bid5Money = detail['bid5'] * detail['bid5_volume'] / 10000000
-                bid_history.industry = stock_map[detail['code']].industry
-                bid_history.concepts = stock_map[detail['code']].concepts
-                bid_history.type = stock_map[detail['code']].type
+                try:
+                    if (bid_history.open - bid_history.close) * 100 / bid_history.close > 9:
+                        bid_history.openHigh = 1
+                    elif (bid_history.open - bid_history.close) * 100 / bid_history.close > 5:
+                        bid_history.openHigh = 2
+                    elif (bid_history.open - bid_history.close) * 100 / bid_history.close > 3:
+                        bid_history.openHigh = 3
+                    else:
+                        bid_history.openHigh = 4
+
+                    bid_history.bidTime = now
+                    bid_history.bid1Money = detail['bid1'] * detail['bid1_volume'] / 10000000
+                    bid_history.bid2Money = detail['bid2'] * detail['bid2_volume'] / 10000000
+                    bid_history.bid3Money = detail['bid3'] * detail['bid3_volume'] / 10000000
+                    bid_history.bid4Money = detail['bid4'] * detail['bid4_volume'] / 10000000
+                    bid_history.bid5Money = detail['bid5'] * detail['bid5_volume'] / 10000000
+                    bid_history.industry = stock_map[detail['code']].industry
+                    bid_history.concepts = stock_map[detail['code']].concepts
+                    bid_history.type = stock_map[detail['code']].type
+                except Exception as e:
+                    print(e)
+                    pass
 
                 if bid_history.industry in industry_sentiment_map:
                     industry_sentiment_map[bid_history.industry] += 1

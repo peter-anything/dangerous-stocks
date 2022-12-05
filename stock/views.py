@@ -6,7 +6,8 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 
 from settings import GOLDEN_RATIOS
-from stock.models import Stock, StockFundamental, MyStock, BidHistory, BidSentimentHistory
+from stock.models import Stock, StockFundamental, MyStock, BidHistory, BidSentimentHistory, \
+    DailyLimitLevel1Stock
 from stock.serializer import StockFundamentalSerializer, StockSerializer
 
 
@@ -217,4 +218,41 @@ def recommend_industry_list(request):
         }
     }
     response = HttpResponse(json.dumps(data, ensure_ascii=False))
+    return response
+
+
+def daily_limit_stocks(request):
+    quotation = easyquotation.use('tencent')  # 新浪 ['sina'] 腾讯 ['tencent', 'qq']
+
+    all_daily_limit_stocks = DailyLimitLevel1Stock.objects.order_by('-visible', '-id').all()
+    codes = [stock.code for stock in my_stocks]
+    real_result = quotation.real(codes)
+
+    result = []
+    for stock in my_stocks:
+        detail = real_result[stock.code]
+        lowest = stock.lowestPrice
+        pressure_prices = [round(lowest * (1 + ratio), 2) for ratio in GOLDEN_RATIOS]
+        result.append({
+            'code': stock.code,
+            'name': detail['name'],
+            'buyPrice': stock.buyPrice,
+            'safePrice': stock.safePrice,
+            'now': detail['now'],
+            'open': detail['open'],
+            'high': detail['high'],
+            'low': detail['low'],
+            'needAlert': ((detail['now'] - detail['open']) * 100 / detail['open']) > 2.9,
+            'turnoverRate': detail['turnover'],
+            'pressurePrices': pressure_prices,
+            'buyDate': stock.buyDate.strftime("%Y-%m-%d %H:%M:%S"),
+            'detailUrl': 'http://stockpage.10jqka.com.cn/%s/' % stock.code,
+        })
+    data = {
+        "code": 0,
+        "data": {
+            "list": result
+        }
+    }
+    response = HttpResponse(json.dumps(data))
     return response

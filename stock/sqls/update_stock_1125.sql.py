@@ -1,0 +1,12 @@
+ALTER TABLE stock ADD industry varchar(64);
+ALTER TABLE stock ADD concepts varchar(1024);
+ALTER TABLE stock ADD marketingTime varchar(64);
+ALTER TABLE stock ADD marketingPlace varchar(64);
+ALTER TABLE stock ADD issuePrice varchar(8);
+ALTER TABLE stock ADD underWriter varchar(64);
+ALTER TABLE stock ADD regCapital varchar(64);
+ALTER TABLE stock ADD regPlace varchar(64);
+ALTER TABLE stock ADD regOfficePlace varchar(64);
+ALTER TABLE stock ADD description varchar(1024);
+ALTER TABLE stock ADD mainBusiness varchar(1024);
+ALTER TABLE stock ADD establishTime varchar(64);
