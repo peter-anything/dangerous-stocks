@@ -104,6 +104,7 @@ def my_stock_list(request):
             'buyPrice': stock.buyPrice,
             'safePrice': stock.safePrice,
             'now': detail['now'],
+            'profit': (detail['now'] - stock.buyPrice) * stock.buyVolume if stock.buyVolume else 0,
             'open': detail['open'],
             'high': detail['high'],
             'low': detail['low'],
@@ -132,6 +133,7 @@ def my_stock_create(request):
     safePrice = params.get('safePrice')
     buyReason = params.get('buyReason')
     lowestPrice = params.get('lowestPrice')
+    buyVolume = params.get('buyVolume')
 
     stock = Stock.objects.filter(code=code).first()
     if stock:
@@ -140,9 +142,10 @@ def my_stock_create(request):
         my_stock.code = stock.code
         my_stock.name = stock.name
         my_stock.buyPrice = buyPrice
-        my_stock.safePrice = safePrice
+        my_stock.safePrice = buyPrice
         my_stock.buyReason = buyReason
-        my_stock.lowestPrice = lowestPrice
+        my_stock.lowestPrice = buyPrice
+        my_stock.buyVolume = buyVolume
         my_stock.save()
 
     response = HttpResponse(json.dumps({}))
@@ -162,6 +165,8 @@ def recommend_stock_list(request):
     records = []
     for bid_history in bid_histories:
         now_price = real_result[bid_history.code]['now']
+        if real_result[bid_history.code]['总市值'] >= 300:
+            continue
         records.append({
             'code': bid_history.code,
             'name': bid_history.name,

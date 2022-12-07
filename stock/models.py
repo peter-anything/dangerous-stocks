@@ -66,6 +66,7 @@ class MyStock(models.Model):
     sellPrice = models.FloatField()
     sellReason = models.CharField(max_length=128)  # 转手亮
     visible = models.IntegerField(default=1)
+    buyVolume = models.IntegerField(default=100)
 
     lowestPrice = models.FloatField()
     highestPrice = models.FloatField

@@ -19,6 +19,8 @@ class Command(BaseCommand):
                                         microseconds=now.microsecond) + timedelta(hours=9, minutes=20, seconds=20)
         bid_end_time3 = now - timedelta(hours=now.hour, minutes=now.minute, seconds=now.second,
                                         microseconds=now.microsecond) + timedelta(hours=9, minutes=25, seconds=20)
+        bid_end_time4 = now - timedelta(hours=now.hour, minutes=now.minute, seconds=now.second,
+                                        microseconds=now.microsecond) + timedelta(hours=9, minutes=30, seconds=10)
         if now < bid_end_time1:
             print('当前时间：%s, 时间未到' % now.strftime("%Y-%m-%d %H:%M:%S"))
             return
@@ -33,8 +35,13 @@ class Command(BaseCommand):
             if len(bids) > 0:
                 print('当前时间：%s, 此时间段已生成数据' % now.strftime("%Y-%m-%d %H:%M:%S"))
                 return
+        elif bid_end_time3 <= now < bid_end_time4:
+            bids = BidHistory.objects.filter(bidTime__gte=bid_end_time3, bidTime__lt=bid_end_time4)
+            if len(bids) > 0:
+                print('当前时间：%s, 此时间段已生成数据' % now.strftime("%Y-%m-%d %H:%M:%S"))
+                return
         else:
-            bids = BidHistory.objects.filter(bidTime__gte=bid_end_time3)
+            bids = BidHistory.objects.filter(bidTime__gte=bid_end_time4)
             if len(bids) > 0:
                 print('当前时间：%s, 此时间段已生成数据' % now.strftime("%Y-%m-%d %H:%M:%S"))
                 return
