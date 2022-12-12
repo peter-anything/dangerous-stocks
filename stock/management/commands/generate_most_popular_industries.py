@@ -1,11 +1,9 @@
-import csv
 from datetime import datetime, timedelta
 
-from django.core.management.base import BaseCommand, CommandError
-
 import easyquotation
+from django.core.management.base import BaseCommand
 
-from stock.models import Stock, StockFundamental, BidHistory, BidSentimentHistory
+from stock.models import Stock, BidHistory, BidSentimentHistory
 
 
 class Command(BaseCommand):

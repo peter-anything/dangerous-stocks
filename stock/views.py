@@ -6,7 +6,8 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 
 from settings import GOLDEN_RATIOS
-from stock.models import Stock, StockFundamental, MyStock, BidHistory, BidSentimentHistory, DailyLimitLevel1Stock
+from stock.models import Stock, StockFundamental, MyStock, BidHistory, BidSentimentHistory, DailyLimitLevel1Stock, \
+    ManualRecommendStock
 from stock.serializer import StockFundamentalSerializer, StockSerializer
 
 
@@ -86,6 +87,45 @@ def all_stock_fundamental_list(request):
     return JsonResponse(data, safe=False)
 
 
+def alert_stocks(request):
+    quotation = easyquotation.use('tencent')  # 新浪 ['sina'] 腾讯 ['tencent', 'qq']
+
+    my_stocks = MyStock.objects.order_by('-visible', '-id').all()
+    codes = [stock.code for stock in my_stocks]
+    real_result = quotation.real(codes)
+
+    result = []
+    for stock in my_stocks:
+        detail = real_result[stock.code]
+        lowest = stock.lowestPrice
+        pressure_prices = [round(lowest * (1 + ratio), 2) for ratio in GOLDEN_RATIOS]
+        need_alert = ((detail['now'] - detail['open']) * 100 / detail['open']) > 2.9
+        result.append({
+            'code': stock.code,
+            'name': detail['name'],
+            'buyPrice': stock.buyPrice,
+            'safePrice': stock.safePrice,
+            'now': detail['now'],
+            'profit': (detail['now'] - stock.buyPrice) * stock.buyVolume if stock.buyVolume else 0,
+            'open': detail['open'],
+            'high': detail['high'],
+            'low': detail['low'],
+            'needAlert': need_alert,
+            'turnoverRate': detail['turnover'],
+            'pressurePrices': pressure_prices,
+            'buyDate': stock.buyDate.strftime("%Y-%m-%d %H:%M:%S"),
+            'detailUrl': 'http://stockpage.10jqka.com.cn/%s/' % stock.code,
+        })
+    data = {
+        "code": 0,
+        "data": {
+            "list": result
+        }
+    }
+    response = HttpResponse(json.dumps(data))
+    return response
+
+
 def my_stock_list(request):
     quotation = easyquotation.use('tencent')  # 新浪 ['sina'] 腾讯 ['tencent', 'qq']
 
@@ -98,6 +138,7 @@ def my_stock_list(request):
         detail = real_result[stock.code]
         lowest = stock.lowestPrice
         pressure_prices = [round(lowest * (1 + ratio), 2) for ratio in GOLDEN_RATIOS]
+        need_alert = ((detail['now'] - detail['open']) * 100 / detail['open']) > 2.9
         result.append({
             'code': stock.code,
             'name': detail['name'],
@@ -108,7 +149,7 @@ def my_stock_list(request):
             'open': detail['open'],
             'high': detail['high'],
             'low': detail['low'],
-            'needAlert': ((detail['now'] - detail['open']) * 100 / detail['open']) > 2.9,
+            'needAlert': need_alert,
             'turnoverRate': detail['turnover'],
             'pressurePrices': pressure_prices,
             'buyDate': stock.buyDate.strftime("%Y-%m-%d %H:%M:%S"),
@@ -137,7 +178,6 @@ def my_stock_create(request):
 
     stock = Stock.objects.filter(code=code).first()
     if stock:
-        pass
         my_stock = MyStock()
         my_stock.code = stock.code
         my_stock.name = stock.name
@@ -259,4 +299,50 @@ def daily_limit_stocks(request):
         }
     }
     response = HttpResponse(json.dumps(data))
+    return response
+
+
+def manual_recommend_stock_create(request):
+    body_unicode = request.body.decode('utf-8')
+    params = json.loads(body_unicode)
+
+    code = params.get('code')
+
+    stock = Stock.objects.filter(code=code).first()
+    if stock:
+        manual_recommend_stock = ManualRecommendStock()
+        manual_recommend_stock.code = stock.code
+        manual_recommend_stock.name = stock.name
+        manual_recommend_stock.save()
+
+    response = HttpResponse(json.dumps({}))
+    return response
+
+
+def manual_recommend_stocks(request):
+    manual_stocks = ManualRecommendStock.objects.all()
+    codes = [manual_stock.code for manual_stock in manual_stocks]
+    stocks = Stock.objects.filter(code__in=codes)
+    stock_map = {}
+    for stock in stocks:
+        stock_map[stock.code] = stock
+    result = []
+    for stock in manual_stocks:
+        result.append({
+            'code': stock.code,
+            'name': stock.name,
+            'now': stock.now,
+            'industry': stock_map[stock.code].industry,
+            'concepts': stock_map[stock.code].concepts,
+            'type': stock_map[stock.code].type,
+            'open': stock.open,
+            'high': stock.high,
+            'low': stock.low,
+            'downRate': stock.downRate,
+            'riseUpRate': stock.riseUpRate,
+            'needAlert': stock.needAlert,
+            'detailUrl': 'http://stockpage.10jqka.com.cn/%s/' % stock.code,
+        })
+
+    response = HttpResponse(json.dumps({}))
     return response

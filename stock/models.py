@@ -166,3 +166,38 @@ class RecommendStock(models.Model):
 
     class Meta:
         db_table = "recommend_stock"
+
+
+class ManualRecommendStock(models.Model):
+    # id = models.AutoField(primary_key=True, default=1)  # id 会自动创建,可以手动写入
+    code = models.CharField(max_length=16)  # 代码
+    name = models.CharField(max_length=64)  # 名称
+    cancel = models.SmallIntegerField(default=0)
+
+    class Meta:
+        db_table = "manual_recommend_stock"
+
+
+class ManualRecommendStockPriceHistory(models.Model):
+    # id = models.AutoField(primary_key=True, default=1)  # id 会自动创建,可以手动写入
+    code = models.CharField(max_length=16)  # 代码
+    name = models.CharField(max_length=64)  # 名称
+    createdAt = models.DateTimeField()
+    open = models.FloatField()  # 开盘
+    close = models.FloatField()  # 昨收盘
+    low = models.FloatField()
+    high = models.FloatField()
+    openHigh = models.IntegerField()  # 是否高开
+    openHighRate = models.FloatField()  # 高开幅度
+    downRate = models.FloatField()
+    riseUpRate = models.FloatField()
+    nowRate = models.FloatField()
+    afterHalfHourDownRate = models.FloatField()
+    afterHalfHourRiseUpRate = models.FloatField()
+    afterHalfHourNowRate = models.FloatField()
+    closeRate = models.FloatField()
+    needAlert = models.SmallIntegerField(default=0)  # 是否异动
+    bid1Money = models.FloatField()
+
+    class Meta:
+        db_table = "manual_recommend_stock_price_history"
