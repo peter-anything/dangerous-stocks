@@ -49,6 +49,10 @@ class Command(BaseCommand):
                 manual_recommend_stock_price_history.low = detail['low']
                 manual_recommend_stock_price_history.high = detail['high']
                 manual_recommend_stock_price_history.createdAt = now
+                manual_recommend_stock_price_history.marketValue = detail['总市值']
+                manual_recommend_stock_price_history.tradingMarketValue = detail['流通市值']
+                manual_recommend_stock_price_history.turnoverRate = detail['turnover']
+                manual_recommend_stock_price_history.pe = detail['PE']
                 manual_recommend_stock_price_history.bid1Money = detail['bid1'] * detail['bid1_volume'] / 10000000
                 openHighRate = (
                                        manual_recommend_stock_price_history.open - manual_recommend_stock_price_history.close) * 100 / manual_recommend_stock_price_history.close
@@ -91,6 +95,7 @@ class Command(BaseCommand):
             manual_recommend_stock_price_history_map[stock_code].downRate = downRate
             manual_recommend_stock_price_history_map[stock_code].riseUpRate = riseUpRate
             manual_recommend_stock_price_history_map[stock_code].nowRate = nowRate
+            manual_recommend_stock_price_history_map[stock_code].now = now_price
 
             if now >= close_time:
                 manual_recommend_stock_price_history_map[stock_code].closeRate = close_rate
@@ -107,5 +112,7 @@ class Command(BaseCommand):
                 manual_recommend_stock_price_history_map[stock_code].needAlert = 1
 
         bulk_update(manual_recommend_stock_price_histories,
-                    update_fields=['high', 'low', 'downRate', 'riseUpRate', 'nowRate',
-                                   'needAlert', 'closeRate', 'afterHalfHourNowRate', 'afterHalfHourDownRate', 'afterHalfHourRiseUpRate'])  # updates only name column
+                    update_fields=['high', 'low', 'downRate', 'riseUpRate',
+                                   'nowRate', 'needAlert', 'closeRate', 'afterHalfHourNowRate',
+                                   'afterHalfHourDownRate', 'afterHalfHourRiseUpRate',
+                                   'now'])  # updates only name column

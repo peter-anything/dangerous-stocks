@@ -7,7 +7,7 @@ from django.shortcuts import render
 
 from settings import GOLDEN_RATIOS
 from stock.models import Stock, StockFundamental, MyStock, BidHistory, BidSentimentHistory, DailyLimitLevel1Stock, \
-    ManualRecommendStock
+    ManualRecommendStock, ManualRecommendStockPriceHistory
 from stock.serializer import StockFundamentalSerializer, StockSerializer
 
 
@@ -205,8 +205,8 @@ def recommend_stock_list(request):
     records = []
     for bid_history in bid_histories:
         now_price = real_result[bid_history.code]['now']
-        if real_result[bid_history.code]['总市值'] >= 300:
-            continue
+        # if real_result[bid_history.code]['总市值'] >= 300:
+        #     continue
         records.append({
             'code': bid_history.code,
             'name': bid_history.name,
@@ -326,23 +326,47 @@ def manual_recommend_stocks(request):
     stock_map = {}
     for stock in stocks:
         stock_map[stock.code] = stock
-    result = []
-    for stock in manual_stocks:
-        result.append({
-            'code': stock.code,
-            'name': stock.name,
-            'now': stock.now,
-            'industry': stock_map[stock.code].industry,
-            'concepts': stock_map[stock.code].concepts,
-            'type': stock_map[stock.code].type,
-            'open': stock.open,
-            'high': stock.high,
-            'low': stock.low,
-            'downRate': stock.downRate,
-            'riseUpRate': stock.riseUpRate,
-            'needAlert': stock.needAlert,
-            'detailUrl': 'http://stockpage.10jqka.com.cn/%s/' % stock.code,
-        })
+    manual_stock_histories = ManualRecommendStockPriceHistory.objects\
+        .filter(code__in=codes).order_by('-needAlert', '-bid1Money')
+    manual_stock_history_map = {}
+    for manual_stock_history in manual_stock_histories:
+        manual_stock_history_map[manual_stock_history.code] = manual_stock_history
 
-    response = HttpResponse(json.dumps({}))
+    result = []
+    for manual_stock_history in manual_stock_histories:
+        stock_detail = stock_map[manual_stock_history.code]
+        result.append({
+            'code': manual_stock_history.code,
+            'name': manual_stock_history.name,
+            'now': manual_stock_history.now,
+            'industry': stock_detail.industry,
+            'concepts': stock_detail.concepts,
+            'type': stock_detail.type,
+            'open': manual_stock_history.open,
+            'high': manual_stock_history.high,
+            'low': manual_stock_history.low,
+            'close': manual_stock_history.close,
+            'downRate': manual_stock_history.downRate,
+            'riseUpRate': manual_stock_history.riseUpRate,
+            'openHighRate': manual_stock_history.openHighRate,
+            'closeMoney': manual_stock_history.bid1Money,
+            'marketValue': manual_stock_history.marketValue,
+            'tradingMarketValue': manual_stock_history.tradingMarketValue,
+            'pe': manual_stock_history.pe,
+            'turnoverRate': manual_stock_history.turnoverRate,
+            'nowRate': manual_stock_history.nowRate,
+            'afterHalfHourRiseUpRate': manual_stock_history.afterHalfHourRiseUpRate,
+            'afterHalfHourDownRate': manual_stock_history.afterHalfHourDownRate,
+            'afterHalfHourNowRate': manual_stock_history.afterHalfHourNowRate,
+            'needAlert': manual_stock_history.needAlert,
+            'detailUrl': 'http://stockpage.10jqka.com.cn/%s/' % manual_stock_history.code,
+        })
+    data = {
+        "code": 0,
+        "data": {
+            "list": result
+        }
+    }
+    response = HttpResponse(json.dumps(data))
     return response
+

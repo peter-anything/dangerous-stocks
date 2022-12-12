@@ -186,7 +186,12 @@ class ManualRecommendStockPriceHistory(models.Model):
     open = models.FloatField()  # 开盘
     close = models.FloatField()  # 昨收盘
     low = models.FloatField()
+    now = models.FloatField()
     high = models.FloatField()
+    marketValue = models.FloatField()  # 市值
+    tradingMarketValue = models.FloatField()  # 流值
+    pe = models.FloatField()  # 市盈率
+    turnoverRate = models.FloatField()  # 转手率
     openHigh = models.IntegerField()  # 是否高开
     openHighRate = models.FloatField()  # 高开幅度
     downRate = models.FloatField()
