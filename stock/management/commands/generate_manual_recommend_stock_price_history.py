@@ -11,30 +11,34 @@ class Command(BaseCommand):
     help = 'test'
 
     def handle(self, *args, **options):
-        stocks = ManualRecommendStock.objects.filter(cancel=0)
-        print(stocks.query)
-        stock_codes = [stock.code for stock in stocks]
-
-        quotation = easyquotation.use('tencent')
-        now = datetime.now()
-
-        real_result = quotation.real([str(stock_code) for stock_code in stock_codes])
-        manual_recommend_stock_price_history_arr = []
-
         now = datetime.now()
         bid_end_time4 = now - timedelta(hours=now.hour, minutes=now.minute, seconds=now.second,
                                         microseconds=now.microsecond) + timedelta(hours=9, minutes=30, seconds=10)
         after_half_hour_time = now - timedelta(hours=now.hour, minutes=now.minute, seconds=now.second,
                                                microseconds=now.microsecond) + timedelta(hours=10, minutes=00,
                                                                                          seconds=0)
-        is_after_half_hour = now >= after_half_hour_time
         close_time = now - timedelta(hours=now.hour, minutes=now.minute, seconds=now.second,
                                      microseconds=now.microsecond) + timedelta(hours=15, minutes=00, seconds=10)
+        if now < bid_end_time4:
+            print('未开盘，不操作')
+            return
+
+        if now > close_time:
+            print('已闭盘，不操作')
+            return
 
         manual_recommend_stock_price_histories = ManualRecommendStockPriceHistory.objects.filter(
             createdAt__gt=bid_end_time4)
         exists_codes = [manual_recommend_stock_price_history.code for manual_recommend_stock_price_history in
                         manual_recommend_stock_price_histories]
+
+        stocks = ManualRecommendStock.objects.filter(cancel=0)
+        stock_codes = [stock.code for stock in stocks]
+
+        quotation = easyquotation.use('tencent')
+        now = datetime.now()
+
+        real_result = quotation.real([str(stock_code) for stock_code in stock_codes])
 
         not_in_db_codes = set(stock_codes) - set(exists_codes)
         if len(not_in_db_codes) > 0:
@@ -115,4 +119,5 @@ class Command(BaseCommand):
                     update_fields=['high', 'low', 'downRate', 'riseUpRate',
                                    'nowRate', 'needAlert', 'closeRate', 'afterHalfHourNowRate',
                                    'afterHalfHourDownRate', 'afterHalfHourRiseUpRate',
-                                   'now'])  # updates only name column
+                                   'now'])
+
