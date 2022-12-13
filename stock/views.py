@@ -2,13 +2,21 @@ import json
 from datetime import datetime, timedelta
 
 import easyquotation
+from apscheduler.schedulers.background import BackgroundScheduler
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 
 from settings import GOLDEN_RATIOS
+from stock import util
 from stock.models import Stock, StockFundamental, MyStock, BidHistory, BidSentimentHistory, DailyLimitLevel1Stock, \
     ManualRecommendStock, ManualRecommendStockPriceHistory
 from stock.serializer import StockFundamentalSerializer, StockSerializer
+
+
+scheduler = BackgroundScheduler()
+scheduler.add_job(util.generate_most_popular_industries, 'interval', seconds=10)
+scheduler.add_job(util.generate_manual_recommend_stock_price_history, 'interval', seconds=3)
+scheduler.start()
 
 
 def index(request):
@@ -327,7 +335,7 @@ def manual_recommend_stocks(request):
     for stock in stocks:
         stock_map[stock.code] = stock
     manual_stock_histories = ManualRecommendStockPriceHistory.objects\
-        .filter(code__in=codes).order_by('-needAlert', '-bid1Money')
+        .filter(code__in=codes).filter(bid1Money__gte=0.4).order_by('-needAlert', '-bid1Money')
     manual_stock_history_map = {}
     for manual_stock_history in manual_stock_histories:
         manual_stock_history_map[manual_stock_history.code] = manual_stock_history

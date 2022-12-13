@@ -6,6 +6,16 @@ from django.core.management.base import BaseCommand
 from stock.models import Stock, BidHistory, BidSentimentHistory
 
 
+class BidStatistics(object):
+    industry = ''
+    count = 0
+    total_close_money = 0
+    stocks = []
+
+    def __str__(self):
+        return '''行业: %s，数量: %s, 包含股票: %s''' % (self.industry, self.count, '###'.join(['%s_%s_%s亿' % (stock['code'], stock['name'], stock['closeMoney']) for stock in self.stocks]))
+
+
 class Command(BaseCommand):
     help = 'test'
 
@@ -42,6 +52,30 @@ class Command(BaseCommand):
             bids = BidHistory.objects.filter(bidTime__gte=bid_end_time4)
             if len(bids) > 0:
                 print('当前时间：%s, 此时间段已生成数据' % now.strftime("%Y-%m-%d %H:%M:%S"))
+                industry_map = {}
+                for bid_history in bids:
+                    if bid_history.industry in industry_map:
+                        industry_map[bid_history.industry].append(bid_history)
+                    else:
+                        industry_map[bid_history.industry] = [bid_history]
+                bid_statistics_arr = []
+                for industry, bids in industry_map.items():
+                    bid_statistics = BidStatistics()
+                    bid_statistics.industry = industry
+                    bid_statistics.count = len(bids)
+                    total_close_money = 0
+                    for bid in bids:
+                        total_close_money += bid.bid1Money
+                    bid_statistics.stocks = [{
+                        'code': bid.code,
+                        'name': bid.name,
+                        'closeMoney': bid.bid1Money,
+                    } for bid in bids]
+                    bid_statistics.total_close_money = total_close_money
+                    bid_statistics_arr.append(bid_statistics)
+                bid_statistics_arr.sort(key=lambda x: (-x.count, -x.total_close_money))
+                for bid_statistics in bid_statistics_arr:
+                    print(bid_statistics)
                 return
 
         all_stocks = Stock.objects \
