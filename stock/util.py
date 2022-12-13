@@ -76,7 +76,7 @@ def generate_most_popular_industries():
             for bid_statistics in bid_statistics_arr:
                 print(bid_statistics)
             print('##################################################################')
-
+            return
 
     all_stocks = Stock.objects \
         .exclude(code__istartswith='300').exclude(code__istartswith='688').exclude(name__startswith='ST') \

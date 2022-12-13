@@ -335,7 +335,7 @@ def manual_recommend_stocks(request):
     for stock in stocks:
         stock_map[stock.code] = stock
     manual_stock_histories = ManualRecommendStockPriceHistory.objects\
-        .filter(code__in=codes).filter(bid1Money__gte=0.4).order_by('-needAlert', '-bid1Money')
+        .filter(code__in=codes).filter(bid1Money__gte=0.5).order_by('-needAlert', '-bid1Money')
     manual_stock_history_map = {}
     for manual_stock_history in manual_stock_histories:
         manual_stock_history_map[manual_stock_history.code] = manual_stock_history

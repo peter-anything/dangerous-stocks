@@ -76,7 +76,6 @@ class Command(BaseCommand):
                 bid_statistics_arr.sort(key=lambda x: (-x.count, -x.total_close_money))
                 for bid_statistics in bid_statistics_arr:
                     print(bid_statistics)
-                return
 
         all_stocks = Stock.objects \
             .exclude(code__istartswith='300').exclude(code__istartswith='688').exclude(name__startswith='ST') \
@@ -96,7 +95,7 @@ class Command(BaseCommand):
             bid_price = detail['bid1']
             bid_volume = detail['bid1_volume']
             bid_total = bid_price * bid_volume
-            if bid_total >= 5000 * 10000:
+            if bid_total >= 50000000:
                 bid_history = BidHistory()
                 bid_history.code = detail['code']
                 bid_history.name = detail['name']
