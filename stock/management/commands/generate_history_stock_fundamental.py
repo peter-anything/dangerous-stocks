@@ -86,8 +86,8 @@ class Command(BaseCommand):
                 stockFundamental = StockFundamental()
                 stockFundamental.code = ts_code
                 stockFundamental.name = stock_map[ts_code]
-                # stockFundamental.marketValue = detail['总市值']
-                # stockFundamental.tradingMarketValue = detail['流通市值']
+                stockFundamental.marketValue = detail['总市值']
+                stockFundamental.tradingMarketValue = detail['流通市值']
                 # stockFundamental.turnoverRate = detail['turnover']
                 stockFundamental.open = iopen
                 stockFundamental.high = high

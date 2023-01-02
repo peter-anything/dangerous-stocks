@@ -22,10 +22,10 @@ class Command(BaseCommand):
                 code = values[0].strip()
                 stock_codes.append(code)
                 stock_codes = []
-        stocks = Stock.objects.filter(industry__isnull=True, market='A股').all()
+        stocks = Stock.objects.filter(market='A股').all()
         failed_codes = []
         print(len(stocks))
-        with open('D:\\codes\\dangerous-stocks\\stock_detail_1127.csv', 'w', encoding='utf-8') as f:
+        with open('D:\\codes\\dangerous-stocks\\stock_detail_0102.csv', 'w', encoding='utf-8') as f:
             f_w = csv.writer(f)
             for stock_db in stocks:
                 print(stock_db.code)

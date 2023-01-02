@@ -7,7 +7,7 @@ from django.shortcuts import render
 
 from settings import GOLDEN_RATIOS
 from stock.models import Stock, StockFundamental, MyStock, BidHistory, BidSentimentHistory, DailyLimitLevel1Stock, \
-    ManualRecommendStock, ManualRecommendStockPriceHistory
+    ManualRecommendStock, ManualRecommendStockPriceHistory, StockReview
 from stock.serializer import StockFundamentalSerializer, StockSerializer
 
 
@@ -138,23 +138,24 @@ def my_stock_list(request):
         detail = real_result[stock.code]
         lowest = stock.lowestPrice
         pressure_prices = [round(lowest * (1 + ratio), 2) for ratio in GOLDEN_RATIOS]
-        need_alert = ((detail['now'] - detail['open']) * 100 / detail['open']) > 2.9
-        result.append({
-            'code': stock.code,
-            'name': detail['name'],
-            'buyPrice': stock.buyPrice,
-            'safePrice': stock.safePrice,
-            'now': detail['now'],
-            'profit': (detail['now'] - stock.buyPrice) * stock.buyVolume if stock.buyVolume else 0,
-            'open': detail['open'],
-            'high': detail['high'],
-            'low': detail['low'],
-            'needAlert': need_alert,
-            'turnoverRate': detail['turnover'],
-            'pressurePrices': pressure_prices,
-            'buyDate': stock.buyDate.strftime("%Y-%m-%d %H:%M:%S"),
-            'detailUrl': 'http://stockpage.10jqka.com.cn/%s/' % stock.code,
-        })
+        if detail['open'] > 0:
+            need_alert = ((detail['now'] - detail['open']) * 100 / detail['open']) > 2.9
+            result.append({
+                'code': stock.code,
+                'name': detail['name'],
+                'buyPrice': stock.buyPrice,
+                'safePrice': stock.safePrice,
+                'now': detail['now'],
+                'profit': (detail['now'] - stock.buyPrice) * stock.buyVolume if stock.buyVolume else 0,
+                'open': detail['open'],
+                'high': detail['high'],
+                'low': detail['low'],
+                'needAlert': need_alert,
+                'turnoverRate': detail['turnover'],
+                'pressurePrices': pressure_prices,
+                'buyDate': stock.buyDate.strftime("%Y-%m-%d %H:%M:%S"),
+                'detailUrl': 'http://stockpage.10jqka.com.cn/%s/' % stock.code,
+            })
     data = {
         "code": 0,
         "data": {
@@ -326,7 +327,7 @@ def manual_recommend_stocks(request):
     stock_map = {}
     for stock in stocks:
         stock_map[stock.code] = stock
-    manual_stock_histories = ManualRecommendStockPriceHistory.objects\
+    manual_stock_histories = ManualRecommendStockPriceHistory.objects \
         .filter(code__in=codes).order_by('-needAlert', '-bid1Money')
     manual_stock_history_map = {}
     for manual_stock_history in manual_stock_histories:
@@ -370,3 +371,173 @@ def manual_recommend_stocks(request):
     response = HttpResponse(json.dumps(data))
     return response
 
+
+def daily_stock_review(request):
+    result = []
+    createdAt = request.GET.get('createdAt')
+    upLimitType = request.GET.get('upLimitType')
+    industry = request.GET.get('industry')
+    if not createdAt:
+        createdAt = datetime.now().strftime("%Y-%m-%d")
+    if not upLimitType:
+        upLimitType = 1
+
+    stocks = StockReview.objects.filter(upLimitType=upLimitType)
+    if industry:
+        stocks = stocks.filter(industry=industry)
+
+    if createdAt:
+        stocks = stocks \
+            .filter(createdAt__gt=createdAt + ' 00:00:00') \
+            .filter(createdAt__lt=createdAt + ' 23:59:59') \
+            .order_by('-continuousUpLimitCount', 'finalUpLimitTime')
+
+    for stock in stocks:
+        result.append({
+            'code': stock.code,
+            'name': stock.name,
+            'now': stock.now,
+            'open': stock.open,
+            'marketValue': stock.marketValue,
+            'tradingMarketValue': stock.tradingMarketValue,
+            'turnoverRate': stock.turnoverRate,
+            'closeMoney': round(stock.bid1Money / 10.0, 2),
+            'type': stock.type,
+            'industry': stock.industry,
+            'concepts': stock.concepts,
+            'firstUpLimitTime': stock.firstUpLimitTime[11:],
+            'finalUpLimitTime': stock.finalUpLimitTime[11:],
+            'breakUpLimitCount': stock.breakUpLimitCount,
+            'continuousUpLimitCount': stock.continuousUpLimitCount,
+            'upDownStatistics': stock.upDownStatistics,
+            'growthRate': stock.growthRate,
+            'createdAt': stock.createdAt.strftime("%Y-%m-%d %H:%M:%S"),
+            'detailUrl': 'http://stockpage.10jqka.com.cn/%s/' % stock.code,
+        })
+    data = {
+        "code": 0,
+        "data": {
+            "list": result
+        },
+        'total': 0
+    }
+    response = HttpResponse(json.dumps(data))
+    return response
+
+
+def daily_stock_review_statistics(request):
+    result = []
+    createdAt = request.GET.get('createdAt')
+    analysisType = request.GET.get('analysisType', '2')
+    if not createdAt:
+        createdAt = datetime.now().strftime("%Y-%m-%d")
+
+    if analysisType == '1':
+        ever_limit_up_count = StockReview.objects.filter(everUpLimited=1) \
+            .filter(createdAt__gt=createdAt + ' 00:00:00') \
+            .filter(createdAt__lt=createdAt + ' 23:59:59') \
+            .count()
+
+        up_limit_count = StockReview.objects.filter(upLimitType=1) \
+            .filter(createdAt__gt=createdAt + ' 00:00:00') \
+            .filter(createdAt__lt=createdAt + ' 23:59:59').count()
+
+        down_limit_count = StockReview.objects.filter(upLimitType=2) \
+            .filter(createdAt__gt=createdAt + ' 00:00:00') \
+            .filter(createdAt__lt=createdAt + ' 23:59:59').count()
+
+        up_count = StockReview.objects.filter(upLimitType=3)\
+            .filter(createdAt__gt=createdAt + ' 00:00:00')\
+            .filter(createdAt__lt=createdAt + ' 23:59:59').count()
+
+        down_count = StockReview.objects.filter(upLimitType=4) \
+            .filter(createdAt__gt=createdAt + ' 00:00:00') \
+            .filter(createdAt__lt=createdAt + ' 23:59:59').count()
+
+        zero_count = StockReview.objects.filter(upLimitType=5) \
+            .filter(createdAt__gt=createdAt + ' 00:00:00') \
+            .filter(createdAt__lt=createdAt + ' 23:59:59').count()
+
+        result = []
+
+        result.append({
+            'key': '上涨数',
+            'value': up_count
+        })
+        result.append({
+            'key': '下跌数',
+            'value': down_count
+        })
+        result.append({
+            'key': '涨停数',
+            'value': up_limit_count
+        })
+        result.append({
+            'key': '跌停数',
+            'value': down_limit_count
+        })
+        result.append({
+            'key': '平家数',
+            'value': zero_count
+        })
+        result.append({
+            'key': '曾涨停数',
+            'value': ever_limit_up_count
+        })
+        result.append({
+            'key': '涨停封板率',
+            'value': up_limit_count / (up_limit_count + ever_limit_up_count)
+        })
+    elif analysisType == '2':
+        stocks = StockReview.objects \
+            .filter(createdAt__gt=createdAt + ' 00:00:00') \
+            .filter(createdAt__lt=createdAt + ' 23:59:59') \
+            .all()
+        industry_map = {}
+        for stock in stocks:
+            industry_detail = None
+            if stock.industry in industry_map:
+                industry_detail = industry_map[stock.industry]
+            else:
+                industry_detail = {
+                    '涨停数': 0,
+                    '跌停数': 0,
+                    '曾涨停数': 0,
+                    '上涨数': 0,
+                    '下跌数': 0,
+                    '平家数': 0,
+                }
+                industry_map[stock.industry] = industry_detail
+
+            if stock.upLimitType == 1:
+                industry_detail['涨停数'] = industry_detail['涨停数'] + 1
+            elif stock.upLimitType == 2:
+                industry_detail['跌停数'] = industry_detail['跌停数'] + 1
+            elif stock.upLimitType == 3:
+                industry_detail['上涨数'] = industry_detail['上涨数'] + 1
+            elif stock.upLimitType == 4:
+                industry_detail['下跌数'] = industry_detail['下跌数'] + 1
+            elif stock.upLimitType == 5:
+                industry_detail['平家数'] = industry_detail['平家数'] + 1
+            elif stock.everUpLimited == 1:
+                industry_detail['曾涨停数'] = industry_detail['曾涨停数'] + 1
+            industry_map[stock.industry] = industry_detail
+        for industry, detail in industry_map.items():
+            result.append({
+                'key': industry,
+                'value': detail
+            })
+
+        result.sort(key=lambda x: x['value']['上涨数'], reverse=True)
+        for idx, r in enumerate(result):
+            r['value'] = json.dumps(r['value']).encode().decode('unicode-escape')
+            result[idx] = r
+
+    data = {
+        "code": 0,
+        "data": {
+            "list": result
+        },
+    }
+    response = HttpResponse(json.dumps(data))
+    return response

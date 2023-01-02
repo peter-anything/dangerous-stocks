@@ -11,7 +11,7 @@ CREATE TABLE daily_limit_level1_stock (
     safePrice float,
     lowestPrice float,
     highestPrice float,
-    growRate float,
+    growthRate float,
     buyReason varchar(256),
     sellPrice float,
     sellDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

@@ -15,4 +15,6 @@ urlpatterns = [
     url(r'^manual_recommend_stocks/$', views.manual_recommend_stocks),
     url(r'^recommend_industries/$', views.recommend_industry_list),
     url(r'^daily_limit_stocks/$', views.daily_limit_stocks),
+    url(r'^daily_stock_review/$', views.daily_stock_review),
+    url(r'^daily_stock_review_statistics/$', views.daily_stock_review_statistics),
 ]

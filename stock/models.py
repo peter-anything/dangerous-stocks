@@ -206,3 +206,49 @@ class ManualRecommendStockPriceHistory(models.Model):
 
     class Meta:
         db_table = "manual_recommend_stock_price_history"
+
+
+class StockReview(models.Model):
+    # id = models.AutoField(primary_key=True, default=1)  # id 会自动创建,可以手动写入
+    code = models.CharField(max_length=16)  # 代码
+    name = models.CharField(max_length=64)  # 名称
+    now = models.FloatField()
+    high = models.FloatField()
+    low = models.FloatField()
+    open = models.FloatField()  # 市值
+    close = models.FloatField()  # 流值
+    growthRate = models.FloatField()  # 市值
+    createdAt = models.DateTimeField()  # 流值
+    upLimit = models.FloatField()
+    downLimit = models.FloatField()
+    marketValue = models.FloatField()
+    tradingMarketValue = models.FloatField()
+    pe = models.FloatField()
+    turnoverRate = models.FloatField()  # 转手亮
+    type = models.CharField(max_length=64)  # 名称
+    industry = models.CharField(max_length=64)
+    concepts = models.CharField(max_length=1024)
+    bid1Money = models.FloatField()
+    upLimitType = models.IntegerField()  # 1、 涨停 2、 跌停 3、上涨 4、下跌 5、平
+    everUpLimited = models.IntegerField(default=0)  # 0、没有涨停 1、曾经涨停
+    breakUpLimitCount = models.IntegerField(default=0)
+    continuousUpLimitCount = models.IntegerField(default=0)
+    upDownStatistics = models.CharField(max_length=64, default='')
+    firstUpLimitTime = models.CharField(max_length=64, default='')
+    finalUpLimitTime = models.CharField(max_length=64, default='')
+
+    class Meta:
+        db_table = "stock_review"
+
+
+class StockReviewStatistics(models.Model):
+    # id = models.AutoField(primary_key=True, default=1)  # id 会自动创建,可以手动写入
+    upLimitCount = models.IntegerField()
+    downLimitCount = models.IntegerField()
+    upCount = models.IntegerField()
+    downCount = models.IntegerField()
+    zeroCount = models.IntegerField()
+    createdAt = models.DateTimeField()  # 流值
+
+    class Meta:
+        db_table = "stock_review_statistics"
