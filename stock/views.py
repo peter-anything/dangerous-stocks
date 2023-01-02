@@ -504,6 +504,8 @@ def daily_stock_review_statistics(request):
         industry_map = {}
         for stock in stocks:
             industry_detail = None
+            if not stock.industry:
+                continue
             if stock.industry in industry_map:
                 industry_detail = industry_map[stock.industry]
             else:
@@ -514,6 +516,7 @@ def daily_stock_review_statistics(request):
                     '上涨数': 0,
                     '下跌数': 0,
                     '平家数': 0,
+                    '上涨率': 0
                 }
                 industry_map[stock.industry] = industry_detail
 
@@ -530,13 +533,18 @@ def daily_stock_review_statistics(request):
             elif stock.everUpLimited == 1:
                 industry_detail['曾涨停数'] = industry_detail['曾涨停数'] + 1
             industry_map[stock.industry] = industry_detail
+
+            for industry, detail in industry_map.items():
+                if (industry_map[industry]['涨停数'] + industry_map[industry]['跌停数'] + industry_map[industry]['上涨数'] + industry_map[industry]['下跌数'] + industry_map[industry]['平家数']) > 10:
+                    industry_map[industry]['上涨率'] = (industry_map[industry]['涨停数'] + industry_map[industry]['上涨数'] ) * 100 / (industry_map[industry]['涨停数'] + industry_map[industry]['跌停数'] + industry_map[industry]['上涨数'] + industry_map[industry]['下跌数'] + industry_map[industry]['平家数'])
+
         for industry, detail in industry_map.items():
             result.append({
                 'key': industry,
                 'value': detail
             })
 
-        result.sort(key=lambda x: x['value']['上涨数'], reverse=True)
+        result.sort(key=lambda x: x['value']['上涨率'], reverse=True)
         for idx, r in enumerate(result):
             r['value'] = json.dumps(r['value']).encode().decode('unicode-escape')
             result[idx] = r
