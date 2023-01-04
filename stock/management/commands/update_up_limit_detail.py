@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 
 from django.core.management.base import BaseCommand
 
@@ -11,8 +11,10 @@ class Command(BaseCommand):
     help = 'test'
 
     def handle(self, *args, **options):
-        today = '2022-12-30'
-        stock_em_zt_pool_df = ak.stock_zt_pool_em(date='20221230')
+        now = datetime.now()
+        today = now.strftime("%Y-%m-%d")
+        akshare_today = now.strftime("%Y%m%d")
+        stock_em_zt_pool_df = ak.stock_zt_pool_em(date=akshare_today)
         for stock in stock_em_zt_pool_df.values:
             id, code, name, growth_rate, now_price, tradingV, tradingMarketValue, marketValue, turnoverRate, closeMony, firstUpLimitTime, finalUpLimitTime, breakUpLimitCount, UpLimitStatistics, continuousUpLimitCount, industry = stock
             stock_detail = StockReview.objects.filter(code=code, createdAt__lt='%s 23:59:59' % today, createdAt__gt='%s 00:00:00' % today)

@@ -230,10 +230,12 @@ def generate_manual_recommend_stock_price_history():
             manual_recommend_stock_price_history_map[stock_code].low = low
         if high > db_high:
             manual_recommend_stock_price_history_map[stock_code].high = high
-        downRate = (low - close) * 100 / open
-        riseUpRate = (high - close) * 100 / open
-        nowRate = (now_price - close) * 100 / open
-        close_rate = (now_price - close) * 100 / open
+        if open <= 0:
+            continue
+        downRate = (low - close) * 100 / close
+        riseUpRate = (high - close) * 100 / close
+        nowRate = (now_price - close) * 100 / close
+        close_rate = (now_price - close) * 100 / close
         manual_recommend_stock_price_history_map[stock_code].downRate = downRate
         manual_recommend_stock_price_history_map[stock_code].riseUpRate = riseUpRate
         manual_recommend_stock_price_history_map[stock_code].nowRate = nowRate

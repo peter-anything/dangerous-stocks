@@ -335,15 +335,28 @@ def manual_recommend_stocks(request):
     stock_map = {}
     for stock in stocks:
         stock_map[stock.code] = stock
+    createdAt = datetime.now().strftime("%Y-%m-%d")
     manual_stock_histories = ManualRecommendStockPriceHistory.objects\
-        .filter(code__in=codes).filter(bid1Money__gte=0.5).order_by('-needAlert', '-bid1Money')
+        .filter(code__in=codes)\
+        .filter(bid1Money__gte=0.5)\
+        .filter(createdAt__lt=createdAt + ' 23:59:59')\
+        .filter(createdAt__gt=createdAt + ' 00:00:00')\
+        .order_by('-needAlert', '-bid1Money')
     manual_stock_history_map = {}
     for manual_stock_history in manual_stock_histories:
         manual_stock_history_map[manual_stock_history.code] = manual_stock_history
 
     result = []
+    already_exists_codes = {}
     for manual_stock_history in manual_stock_histories:
         stock_detail = stock_map[manual_stock_history.code]
+        if not manual_stock_history.nowRate:
+            continue
+        if manual_stock_history.code in already_exists_codes:
+            continue
+
+        already_exists_codes[manual_stock_history.code] = True
+
         result.append({
             'code': manual_stock_history.code,
             'name': manual_stock_history.name,
@@ -544,7 +557,7 @@ def daily_stock_review_statistics(request):
                 'value': detail
             })
 
-        result.sort(key=lambda x: x['value']['上涨率'], reverse=True)
+        result.sort(key=lambda x: x['value']['涨停数'], reverse=True)
         for idx, r in enumerate(result):
             r['value'] = json.dumps(r['value']).encode().decode('unicode-escape')
             result[idx] = r

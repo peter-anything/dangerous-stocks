@@ -16,9 +16,8 @@ class Command(BaseCommand):
             .filter(market='A股')
 
         now = datetime.datetime.now()
-        zero_today = now - datetime.timedelta(hours=now.hour, minutes=now.minute, seconds=now.second, days=-1,
+        zero_today = now - datetime.timedelta(hours=now.hour, minutes=now.minute, seconds=now.second,
                                               microseconds=now.microsecond) + datetime.timedelta(hours=15)
-        zero_today += datetime.timedelta(days=-4)
 
         quotation = easyquotation.use('tencent')
         stock_codes = [stock_fundamental.code for stock_fundamental in all_stocks]
