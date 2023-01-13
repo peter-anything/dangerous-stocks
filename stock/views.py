@@ -137,7 +137,7 @@ def alert_stocks(request):
 def my_stock_list(request):
     quotation = easyquotation.use('tencent')  # 新浪 ['sina'] 腾讯 ['tencent', 'qq']
 
-    my_stocks = MyStock.objects.order_by('-visible', '-id').all()
+    my_stocks = MyStock.objects.filter(visible=1).order_by('-visible', '-id').all()
     codes = [stock.code for stock in my_stocks]
     real_result = quotation.real(codes)
 
@@ -147,7 +147,8 @@ def my_stock_list(request):
         lowest = stock.lowestPrice
         pressure_prices = [round(lowest * (1 + ratio), 2) for ratio in GOLDEN_RATIOS]
         if detail['open'] > 0:
-            need_alert = ((detail['now'] - detail['open']) * 100 / detail['open']) > 2.9
+            closeMoney = detail['bid1'] * detail['bid1_volume'] / 10000000
+            need_alert = ((detail['now'] - detail['open']) * 100 / detail['open']) > 2.9 or closeMoney >= 0.5
             result.append({
                 'code': stock.code,
                 'name': detail['name'],
@@ -158,6 +159,7 @@ def my_stock_list(request):
                 'open': detail['open'],
                 'high': detail['high'],
                 'low': detail['low'],
+                'closeMoney': closeMoney,
                 'needAlert': need_alert,
                 'turnoverRate': detail['turnover'],
                 'pressurePrices': pressure_prices,
@@ -508,6 +510,90 @@ def daily_stock_review_statistics(request):
         result.append({
             'key': '涨停封板率',
             'value': up_limit_count / (up_limit_count + ever_limit_up_count)
+        })
+
+        stocks = StockReview.objects \
+            .filter(createdAt__gt=createdAt + ' 00:00:00') \
+            .filter(createdAt__lt=createdAt + ' 23:59:59') \
+            .all()
+
+        up_limit_1_count = 0
+        up_limit_2_count = 0
+        up_limit_3_count = 0
+        up_limit_4_count = 0
+        up_limit_5_count = 0
+        up_limit_6_count = 0
+        up_limit_7_count = 0
+        up_limit_8_count = 0
+        up_limit_9_count = 0
+        up_limit_10_count = 0
+        up_limit_10_plus_count = 0
+        for st in stocks:
+            if st.continuousUpLimitCount == 1:
+                up_limit_1_count += 1
+            elif st.continuousUpLimitCount == 2:
+                up_limit_2_count += 1
+            elif st.continuousUpLimitCount == 3:
+                up_limit_3_count += 1
+            elif st.continuousUpLimitCount == 4:
+                up_limit_4_count += 1
+            elif st.continuousUpLimitCount == 5:
+                up_limit_5_count += 1
+            elif st.continuousUpLimitCount == 6:
+                up_limit_6_count += 1
+            elif st.continuousUpLimitCount == 7:
+                up_limit_7_count += 1
+            elif st.continuousUpLimitCount == 8:
+                up_limit_8_count += 1
+            elif st.continuousUpLimitCount == 9:
+                up_limit_9_count += 1
+            elif st.continuousUpLimitCount == 10:
+                up_limit_10_count += 1
+            else:
+                up_limit_10_plus_count += 1
+        result.append({
+            'key': '一板数',
+            'value': up_limit_1_count
+        })
+        result.append({
+            'key': '二板数',
+            'value': up_limit_2_count
+        })
+        result.append({
+            'key': '三板数',
+            'value': up_limit_3_count
+        })
+        result.append({
+            'key': '四板数',
+            'value': up_limit_4_count
+        })
+        result.append({
+            'key': '五板数',
+            'value': up_limit_5_count
+        })
+        result.append({
+            'key': '六板数',
+            'value': up_limit_6_count
+        })
+        result.append({
+            'key': '七板数',
+            'value': up_limit_7_count
+        })
+        result.append({
+            'key': '八板数',
+            'value': up_limit_8_count
+        })
+        result.append({
+            'key': '九板数',
+            'value': up_limit_9_count
+        })
+        result.append({
+            'key': '十板数',
+            'value': up_limit_10_count
+        })
+        result.append({
+            'key': '十板以上',
+            'value': up_limit_10_plus_count
         })
     elif analysisType == '2':
         stocks = StockReview.objects \
