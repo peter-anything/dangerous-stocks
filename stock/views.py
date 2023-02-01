@@ -400,6 +400,11 @@ def daily_stock_review(request):
     createdAt = request.GET.get('createdAt')
     upLimitType = request.GET.get('upLimitType')
     industry = request.GET.get('industry')
+    name = request.GET.get('name')
+    orderBy = request.GET.get('orderBy')
+    concept = request.GET.get('concept')
+    recommend = request.GET.get('recommend')
+
     if not createdAt:
         createdAt = datetime.now().strftime("%Y-%m-%d")
     if not upLimitType:
@@ -409,13 +414,59 @@ def daily_stock_review(request):
     if industry:
         stocks = stocks.filter(industry=industry)
 
+    if name:
+        stocks = stocks.filter(name=name)
+
+    concept_map = {
+        '人工智能': ['人工智能'],
+        '军工': ['国防军工', '军工电子', '航天军工', '航天航空', '航天科工集团', '航空工业集团', '军工航天'],
+        '稀土和有色': ['小金属', '稀土永磁', '有色铝', '有色锌'],
+        '网安': ['网络安全', '安全'],
+        '国资云': ['云服务'],
+        '数字经济': ['数字经济'],
+        '信创': ['信创'],
+        '中字头': ['中字头'],
+        'TOPCon': ['TOPCon电池', 'TOPCon'],
+        'HJT电池': ['HJT电池'],
+        '工业母机': ['工业母机'],
+        '储能': ['储能'],
+        '动力煤': ['动力煤'],
+        '航天航空': ['航天军工', '航天航空', '航天科工集团', '航空工业集团', '军工航天'],
+        '新基建': ['新基建'],
+        '种业': ['种业'],
+        '家用电器': ['家用电器', '智能家居'],
+        '机器人': ['智能机器']
+    }
+    map_concepts = None
+    if concept:
+        map_concepts = concept_map.get(concept)
+
     if createdAt:
         stocks = stocks \
             .filter(createdAt__gt=createdAt + ' 00:00:00') \
             .filter(createdAt__lt=createdAt + ' 23:59:59') \
-            .order_by('-continuousUpLimitCount', 'finalUpLimitTime')
+            .order_by('industry', '-continuousUpLimitCount', 'finalUpLimitTime')
+    if orderBy:
+        stocks = stocks \
+            .order_by('-%s' % orderBy, '-tradingMarketValue')
+    else:
+        stocks = stocks \
+            .order_by('industry', '-continuousUpLimitCount', 'finalUpLimitTime')
 
     for stock in stocks:
+        if stock.code ==  '002331':
+            print(stock)
+        if map_concepts:
+            if stock.concepts:
+                st_concepts = json.loads(stock.concepts)
+                if not len(set(st_concepts) & set(map_concepts)) > 0:
+                    continue
+        if recommend == '试盘线':
+            if not ((stock.high - stock.close) - (stock.now - stock.close)) * 100 / stock.close >= 3:
+                continue
+            if stock.marketValue >= 300:
+                continue
+
         result.append({
             'code': stock.code,
             'name': stock.name,
