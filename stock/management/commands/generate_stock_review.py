@@ -51,6 +51,7 @@ class Command(BaseCommand):
                 stock_review.now = now
                 stock_review.createdAt = zero_today
                 stock_review.marketValue = detail['总市值']
+                stock_review.volume = detail['成交量(手)']
                 stock_review.tradingMarketValue = detail['流通市值']
                 stock_review.turnoverRate = detail['turnover']
                 stock_review.pe = detail['PE']

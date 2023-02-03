@@ -443,8 +443,8 @@ def daily_stock_review(request):
 
     if createdAt:
         stocks = stocks \
-            .filter(createdAt__gt=createdAt + ' 00:00:00') \
-            .filter(createdAt__lt=createdAt + ' 23:59:59') \
+            .filter(createdAt__gt=createdAt + ' 09:30:01') \
+            .filter(createdAt__lt=createdAt + ' 15:00:01') \
             .order_by('industry', '-continuousUpLimitCount', 'finalUpLimitTime')
     if orderBy:
         stocks = stocks \
