@@ -3,7 +3,7 @@ import datetime
 import easyquotation
 from django.core.management.base import BaseCommand
 
-from stock.models import Stock, StockReview
+from stock.models import Stock, StockReview, HourStockReview
 
 
 class Command(BaseCommand):
@@ -51,7 +51,7 @@ class Command(BaseCommand):
             if open > 0 and close > 0:
                 grow_rate = (now - close) * 100 / close
 
-                stock_review = StockReview()
+                stock_review = HourStockReview()
                 stock_review.code = code
                 stock_review.name = name
                 stock_review.open = open
@@ -95,4 +95,4 @@ class Command(BaseCommand):
                 stock_review.bid1Money = detail['bid1'] * detail['bid1_volume'] / 10000000
                 stock_review_arr.append(stock_review)
 
-        StockReview.objects.bulk_create(stock_review_arr)
+        HourStockReview.objects.bulk_create(stock_review_arr)

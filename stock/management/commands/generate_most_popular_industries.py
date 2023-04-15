@@ -68,7 +68,6 @@ class Command(BaseCommand):
                         total_close_money += bid.bid1Money
                     bid_statistics.stocks = [{
                         'code': bid.code,
-                        'name': bid.name,
                         'closeMoney': bid.bid1Money,
                     } for bid in bids]
                     bid_statistics.total_close_money = total_close_money

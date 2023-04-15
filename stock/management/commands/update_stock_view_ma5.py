@@ -39,6 +39,7 @@ class Command(BaseCommand):
                 recent_3_stock_reviews = stock_reviews[:3]
 
                 latest_st_review = stock_reviews[0]
+                latest_st_review.createdAt = zero_today
 
                 if recent_3_stock_reviews[0].volume > recent_3_stock_reviews[1].volume > \
                         recent_3_stock_reviews[2].volume:
@@ -64,4 +65,4 @@ class Command(BaseCommand):
                 pass
 
         if len(all_st_reviews) > 0:
-            bulk_update(all_st_reviews, update_fields=['smallVolumeUp', 'volumeBreakUpMa5', 'last2Up', 'last3Up', 'last5Up',])  # updates only name column
+            bulk_update(all_st_reviews, update_fields=['smallVolumeUp', 'volumeBreakUpMa5', 'last2Up', 'last3Up', 'last5Up', 'createdAt'])  # updates only name column

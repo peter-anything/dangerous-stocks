@@ -13,10 +13,10 @@ from stock.models import Stock, StockFundamental, MyStock, BidHistory, BidSentim
 from stock.serializer import StockFundamentalSerializer, StockSerializer
 
 
-scheduler = BackgroundScheduler()
-scheduler.add_job(util.generate_most_popular_industries, 'interval', seconds=10)
-scheduler.add_job(util.generate_manual_recommend_stock_price_history, 'interval', seconds=3)
-scheduler.start()
+# scheduler = BackgroundScheduler()
+# scheduler.add_job(util.generate_most_popular_industries, 'interval', seconds=10)
+# scheduler.add_job(util.generate_manual_recommend_stock_price_history, 'interval', seconds=3)
+# scheduler.start()
 
 
 def index(request):
@@ -342,7 +342,7 @@ def manual_recommend_stocks(request):
         .filter(code__in=codes)\
         .filter(bid1Money__gte=0.5)\
         .filter(createdAt__lt=createdAt + ' 23:59:59')\
-        .filter(createdAt__gt=createdAt + ' 00:00:00')\
+        .filter(createdAt__gt=start_t)\
         .order_by('-needAlert', '-bid1Money')
     manual_stock_history_map = {}
     for manual_stock_history in manual_stock_histories:
@@ -441,10 +441,20 @@ def daily_stock_review(request):
     if concept:
         map_concepts = concept_map.get(concept)
 
+    now = datetime.now()
+    zero_today = now - timedelta(hours=now.hour, minutes=now.minute, seconds=now.second,
+                                          microseconds=now.microsecond)
+
+    # 午盘
+    mid_day = zero_today + timedelta(hours=12, minutes=59)
+
     if createdAt:
+        end_t = createdAt + ' 23:59:59'
+        if now < mid_day:
+            end_t = createdAt + ' 13:00:00'
         stocks = stocks \
             .filter(createdAt__gt=createdAt + ' 09:30:01') \
-            .filter(createdAt__lt=createdAt + ' 15:00:01') \
+            .filter(createdAt__lt=end_t) \
             .order_by('industry', '-continuousUpLimitCount', 'finalUpLimitTime')
     if orderBy:
         stocks = stocks \
@@ -503,34 +513,50 @@ def daily_stock_review_statistics(request):
     result = []
     createdAt = request.GET.get('createdAt')
     analysisType = request.GET.get('analysisType', '2')
+
+    now = datetime.now()
+    zero_today = now - timedelta(hours=now.hour, minutes=now.minute, seconds=now.second,
+                                 microseconds=now.microsecond)
+
     if not createdAt:
         createdAt = datetime.now().strftime("%Y-%m-%d")
 
+    # 午盘
+    mid_day = zero_today + timedelta(hours=12, minutes=59)
+    late_day = zero_today + timedelta(hours=15)
+
+    start_t = createdAt + ' 00:00:00'
+    end_t = createdAt + ' 23:59:59'
+    if now < mid_day:
+        end_t = createdAt + ' 13:00:00'
+    if now > late_day:
+        start_t = createdAt + ' 13:00:01'
+
     if analysisType == '1':
         ever_limit_up_count = StockReview.objects.filter(everUpLimited=1) \
-            .filter(createdAt__gt=createdAt + ' 00:00:00') \
-            .filter(createdAt__lt=createdAt + ' 23:59:59') \
+            .filter(createdAt__gt=start_t) \
+            .filter(createdAt__lt=end_t) \
             .count()
 
         up_limit_count = StockReview.objects.filter(upLimitType=1) \
-            .filter(createdAt__gt=createdAt + ' 00:00:00') \
-            .filter(createdAt__lt=createdAt + ' 23:59:59').count()
+            .filter(createdAt__gt=start_t) \
+            .filter(createdAt__lt=end_t).count()
 
         down_limit_count = StockReview.objects.filter(upLimitType=2) \
-            .filter(createdAt__gt=createdAt + ' 00:00:00') \
-            .filter(createdAt__lt=createdAt + ' 23:59:59').count()
+            .filter(createdAt__gt=start_t) \
+            .filter(createdAt__lt=end_t).count()
 
         up_count = StockReview.objects.filter(upLimitType=3)\
-            .filter(createdAt__gt=createdAt + ' 00:00:00')\
-            .filter(createdAt__lt=createdAt + ' 23:59:59').count()
+            .filter(createdAt__gt=start_t)\
+            .filter(createdAt__lt=end_t).count()
 
         down_count = StockReview.objects.filter(upLimitType=4) \
-            .filter(createdAt__gt=createdAt + ' 00:00:00') \
-            .filter(createdAt__lt=createdAt + ' 23:59:59').count()
+            .filter(createdAt__gt=start_t) \
+            .filter(createdAt__lt=end_t).count()
 
         zero_count = StockReview.objects.filter(upLimitType=5) \
-            .filter(createdAt__gt=createdAt + ' 00:00:00') \
-            .filter(createdAt__lt=createdAt + ' 23:59:59').count()
+            .filter(createdAt__gt=start_t) \
+            .filter(createdAt__lt=end_t).count()
 
         result = []
 
@@ -564,8 +590,8 @@ def daily_stock_review_statistics(request):
         })
 
         stocks = StockReview.objects \
-            .filter(createdAt__gt=createdAt + ' 00:00:00') \
-            .filter(createdAt__lt=createdAt + ' 23:59:59') \
+            .filter(createdAt__gt=start_t) \
+            .filter(createdAt__lt=end_t) \
             .all()
 
         up_limit_1_count = 0
@@ -648,8 +674,8 @@ def daily_stock_review_statistics(request):
         })
     elif analysisType == '2':
         stocks = StockReview.objects \
-            .filter(createdAt__gt=createdAt + ' 00:00:00') \
-            .filter(createdAt__lt=createdAt + ' 23:59:59') \
+            .filter(createdAt__gt=start_t) \
+            .filter(createdAt__lt=end_t) \
             .all()
         industry_map = {}
         for stock in stocks:
