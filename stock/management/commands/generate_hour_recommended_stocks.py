@@ -1,5 +1,6 @@
 import csv
 import datetime
+import os
 
 from django.core.management.base import BaseCommand
 
@@ -25,6 +26,10 @@ class Command(BaseCommand):
                                               microseconds=now.microsecond)
 
         before_6_day = zero_today + datetime.timedelta(days=-6)
+
+        open_time = zero_today + datetime.timedelta(hours=9, minutes=30)
+
+        mid_open_time = zero_today + datetime.timedelta(hours=13, minutes=0)
 
         # 午盘
         mid_day = zero_today + datetime.timedelta(hours=12, minutes=59)
@@ -64,9 +69,23 @@ class Command(BaseCommand):
                 for block_review in block_st_reviews[1:]:
                     total_volume += block_review.volume
 
-                avg_volume = total_volume / (4 * 4)
+                from_open_time = now - open_time
+                from_open_hours = round(from_open_time.seconds / 3600)
 
-                if not latest_st_review.volume >= avg_volume:
+                from_mid_time = now - mid_open_time
+
+                from_mid_open_hours = round(from_mid_time.seconds / 3600)
+
+                avg_day_volume = total_volume / 4
+
+                ratio = 1
+                if from_mid_open_hours > 0:
+                    ratio = 0.25 * min(from_open_hours, 2)
+
+                if from_mid_open_hours > 0:
+                    ratio = 0.25 * (2 + min(from_mid_open_hours, 2))
+
+                if not latest_st_review.volume >= avg_day_volume * ratio:
                     continue
 
                 is_big_up = False
@@ -89,7 +108,6 @@ class Command(BaseCommand):
                                'code': latest_st_review.code})
                         candi_stocks.append(latest_st_review)
 
-
         industry_item_map = {}
         for candi_stock in candi_stocks:
             industry_item = industry_item_map.get(candi_stock.industry, IndustryItem(candi_stock.industry, []))
@@ -99,7 +117,16 @@ class Command(BaseCommand):
 
         industry_items = sorted(industry_items, key=lambda x: len(x.stocks), reverse=True)
 
-        with open('recommend_stocks.csv', 'w') as f:
+        today_str = zero_today.strftime("%Y-%m-%d")
+
+        daily_selected_stock_dir = '/Users/wangxiaobin/Documents/行情/每日精选/'
+
+        today_dir = os.path.join(daily_selected_stock_dir, today_str)
+
+        if not os.path.exists(today_dir):
+            os.makedirs(today_dir)
+
+        with open(os.path.join(today_dir, '盘中精选所有股票.csv'), 'w') as f:
             fw = csv.writer(f)
             fw.writerow(['股票代码', '股票名称', '股票市值', '股票行业', '股票概念', '涨幅'])
             first_count_eq_1 = False
@@ -115,6 +142,21 @@ class Command(BaseCommand):
                     first_count_eq_1 = True
                 stocks = sorted(stocks, key=lambda x: x.growthRate)
                 for st in stocks:
-                    fw.writerow([str(st.code) + '_code', st.name, st.marketValue, st.industry, st.concepts, st.growthRate])
+                    fw.writerow(
+                        [str(st.code) + '_code', st.name, st.marketValue, st.industry, st.concepts, st.growthRate])
 
-        print(len(candi_stocks))
+        with open(os.path.join(today_dir, '盘中精选推荐股票.csv'), 'w') as f:
+            fw = csv.writer(f)
+            fw.writerow(['股票代码', '股票名称', '股票市值', '股票行业', '股票概念', '涨幅'])
+            for industry_item in industry_items:
+                stocks = industry_item.stocks
+
+                if len(stocks) == 1:
+                    continue
+
+                stocks = sorted(stocks, key=lambda x: x.growthRate)
+                for st in stocks:
+                    if st.growthRate > 4:
+                        continue
+                    fw.writerow(
+                        [str(st.code) + '_code', st.name, st.marketValue, st.industry, st.concepts, st.growthRate])

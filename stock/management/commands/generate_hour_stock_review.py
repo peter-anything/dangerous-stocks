@@ -29,6 +29,13 @@ class Command(BaseCommand):
         if now < mid_day:
             curr_day = mid_day
 
+        today_hour_stock_review_count = HourStockReview.objects.filter(createdAt__gt=zero_today).count()
+        if 0 < today_hour_stock_review_count < 4000:
+            HourStockReview.objects.filter(createdAt__gt=zero_today).delete()
+            today_hour_stock_review_count = HourStockReview.objects.filter(createdAt__gt=zero_today).count()
+            if today_hour_stock_review_count == 0:
+                print('当天按时统计数据清空成功')
+
         quotation = easyquotation.use('tencent')
         stock_codes = [stock_fundamental.code for stock_fundamental in all_stocks]
         stocks = Stock.objects.filter(code__in=[str(stock_code) for stock_code in stock_codes])
