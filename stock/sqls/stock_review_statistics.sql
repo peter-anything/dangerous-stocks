@@ -1,0 +1,53 @@
+CREATE TABLE stock_review_recent60 (
+                              id int primary key auto_increment,
+                              code char(16),
+                              name varchar(64),
+                              now float,
+                              open float,
+                              close float,
+                              high float,
+                              low float,
+                              growthRate float,
+                              createdAt timestamp,
+                              upLimit float,
+                              downLimit float,
+                              marketValue float,
+                              tradingMarketValue float,
+                              pe float,
+                              turnoverRate float,
+                              type varchar(64),
+                              industry varchar(64),
+                              concepts varchar(1024),
+                              bid1Money float,
+                              upLimitType int,
+                              everUpLimited int,
+                              breakUpLimitCount int,
+                              continuousUpLimitCount int,
+                              upDownStatistics varchar(64),
+                              firstUpLimitTime varchar(64),
+                              finalUpLimitTime varchar(64),
+                              volume float,
+                              smallUp float default 0,
+                              smallVolumeUp float default 0,
+                              volumeBreakUpMa5 float default 0,
+                              last2Up float default 0,
+                              last3Up float default 0,
+                              last5Up float default 0,
+                              index stock_review_code_index(code)
+);
+
+
+CREATE TABLE stock_statistics (
+                              id int primary key auto_increment,
+                              code char(16),
+                              priceMA5 float,
+                              priceMA10 float,
+                              priceMA20 float,
+                              priceMA60 float,
+
+                              volMA5 float,
+                              volMA10 float,
+                              volMA20 float,
+                              volMA60 float,
+                              index stock_statistics_code_index(code)
+);

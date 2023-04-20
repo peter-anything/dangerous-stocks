@@ -1,7 +1,7 @@
 import easyquotation
 from django.core.management.base import BaseCommand
 
-from stock.models import Stock
+from stock.models import Stock, StockStatistics
 
 
 class IndustryItem(object):
@@ -82,6 +82,10 @@ MY_IMPORTANT_STOCKS = {
         'names': ['工业富联', '拓维信息', '紫光股份', '剑桥科技', '神州数码', '中兴通讯', '中科曙光', '中国长城'],
         'upLimit': 2
     },
+    '创新药': {
+        'names': ['科伦药业', '华兰生物', '海思科', '恒瑞医药', '凯莱英', '药明康德'],
+        'upLimit': 2
+    },
 }
 
 
@@ -101,10 +105,10 @@ class Command(BaseCommand):
         my_import_codes = []
         quotation = easyquotation.use('tencent')
 
-        import tushare as tu
-        result = tu.get_realtime_quotes(['sh','sz','hs300','sz50','zxb','cyb'])
-        data = tu.get_index()
-
+        stock_statistics_map = {}
+        stock_statistics = StockStatistics.objects.all()
+        for st_statistics in stock_statistics:
+            stock_statistics_map[st_statistics.code] = st_statistics
 
         for industry, industry_detail in MY_IMPORTANT_STOCKS.items():
             industry_codes = [st_name_map[name] for name in industry_detail['names']]
@@ -121,9 +125,28 @@ class Command(BaseCommand):
                 low = detail['low']
                 bid_price = detail['bid1']
 
+                stock_statistics = stock_statistics_map[code]
+                priceMA5 = stock_statistics.priceMA5
+                priceMA10 = stock_statistics.priceMA10
+                priceMA20 = stock_statistics.priceMA20
+                priceMA60 = stock_statistics.priceMA60
+
+
                 max_up_limit = (now - low) * 100 / low
                 if not max_up_limit >= industry_detail['upLimit']:
                     continue
+
+                if now > priceMA5:
+                    print('股票：%s, 股价大于5日线' % name)
+                elif now > priceMA10:
+                    print('股票：%s, 股价大于10日线' % name)
+                elif now > priceMA20:
+                    print('股票：%s, 股价大于20日线' % name)
+                elif now > priceMA60:
+                    print('股票：%s, 股价大于60日线' % name)
+                else:
+                    print('股票：%s, 股价大于60日线' % name)
+
                 industry_monitor_stocks.append(detail)
 
             if len(industry_monitor_stocks) >= ((len(industry_codes) - 1) / 2 + 1) or len(industry_monitor_stocks) >= 3:

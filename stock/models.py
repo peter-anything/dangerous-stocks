@@ -299,3 +299,61 @@ class HourStockReview(models.Model):
 
     class Meta:
         db_table = "hour_stock_review"
+
+
+class StockReviewRecent60(models.Model):
+    # id = models.AutoField(primary_key=True, default=1)  # id 会自动创建,可以手动写入
+    code = models.CharField(max_length=16)
+    name = models.CharField(max_length=64)
+    now = models.FloatField()
+    high = models.FloatField()
+    low = models.FloatField()
+    open = models.FloatField()
+    close = models.FloatField()
+    growthRate = models.FloatField()
+    createdAt = models.DateTimeField()
+    upLimit = models.FloatField()
+    downLimit = models.FloatField()
+    marketValue = models.FloatField()
+    tradingMarketValue = models.FloatField()
+    pe = models.FloatField()
+    turnoverRate = models.FloatField()
+    volume = models.FloatField()
+    type = models.CharField(max_length=64)
+    industry = models.CharField(max_length=64)
+    concepts = models.CharField(max_length=1024)
+    bid1Money = models.FloatField()
+    upLimitType = models.IntegerField()  # 1、 涨停 2、 跌停 3、上涨 4、下跌 5、平
+    everUpLimited = models.IntegerField(default=0)  # 0、没有涨停 1、曾经涨停
+    breakUpLimitCount = models.IntegerField(default=0)
+    continuousUpLimitCount = models.IntegerField(default=0)
+    upDownStatistics = models.CharField(max_length=64, default='')
+    firstUpLimitTime = models.CharField(max_length=64, default='')
+    finalUpLimitTime = models.CharField(max_length=64, default='')
+    smallUp = models.IntegerField(default=0)
+    smallVolumeUp = models.IntegerField(default=0)
+    volumeBreakUpMa5 = models.IntegerField(default=0)
+    last2Up = models.IntegerField(default=0)
+    last3Up = models.IntegerField(default=0)
+    last5Up = models.IntegerField(default=0)
+
+    class Meta:
+        db_table = "stock_review_recent60"
+
+
+class StockStatistics(models.Model):
+    # id = models.AutoField(primary_key=True, default=1)  # id 会自动创建,可以手动写入
+    code = models.CharField(max_length=16)
+
+    priceMA5 = models.FloatField()
+    priceMA10 = models.FloatField()
+    priceMA20 = models.FloatField()
+    priceMA60 = models.FloatField()
+
+    volMA5 = models.FloatField()
+    volMA10 = models.FloatField()
+    volMA20 = models.FloatField()
+    volMA60 = models.FloatField()
+
+    class Meta:
+        db_table = "stock_statistics"
