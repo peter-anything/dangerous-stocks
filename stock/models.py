@@ -353,7 +353,14 @@ class StockStatistics(models.Model):
     volMA5 = models.FloatField()
     volMA10 = models.FloatField()
     volMA20 = models.FloatField()
+    volMA40 = models.FloatField()
     volMA60 = models.FloatField()
+    volMA145 = models.FloatField()
+
+    # 成交量处于40日线以下，价格关键位置
+    volCondition = models.IntegerField(default=0)
+    # 价格处于位置，>5 10-5, 20-10, 60-20, <60
+    priceCondition = models.IntegerField(default=0)
 
     class Meta:
         db_table = "stock_statistics"
