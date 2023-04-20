@@ -53,6 +53,7 @@ CREATE TABLE stock_statistics (
                               volMA145 float,
                               priceCondition int default 0,
                               volCondition int default 0,
+                              volContinueCondition int default 0,
 
                               index stock_statistics_code_index(code)
 );

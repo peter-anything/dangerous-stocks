@@ -9,6 +9,8 @@ class Command(BaseCommand):
     help = 'test'
 
     def cal_statistics(self, block_st_reviews):
+        if len(block_st_reviews) < 3:
+            return None
         latest_st_review = block_st_reviews[0]
 
         total_145_volume = 0
@@ -85,16 +87,21 @@ class Command(BaseCommand):
 
         volCondition = 0
         priceCondition = 0
+        volContinueCondition = 0
 
         # 1、小于40日线，低吸 2、突破五日线, 3、连续放量
         latest_3_review = block_st_reviews[:3]
         if latest_st_review.volume < volMA40:
             volCondition = 1
-        elif 1 > (latest_st_review.volume - volMA5) * 100 / volMA5 > -1:
-            volCondition = 3
+        elif (latest_st_review.volume - volMA5) * 100 / volMA5 > -1 or latest_st_review.volume > volMA5:
+            volCondition = 2
 
+        # 1、连续放量
         if latest_3_review[0].volume > latest_3_review[1].volume > latest_3_review[2].volume:
-            volCondition = 3
+            volContinueCondition = 1
+        # 2、连续缩量
+        elif latest_3_review[0].volume < latest_3_review[1].volume < latest_3_review[2].volume:
+            volContinueCondition = 2
 
         # 1、远大于5日线 2、靠近五日线 3、5~10线之间 4、靠近十日线 5、 10~20日线之间 6、靠近20日线  7、20~60日线之间 8、靠近60日线 9、远离60日线
         if 1 > (latest_st_review.now - priceMA5) * 100 / priceMA5 > -1:
@@ -132,7 +139,8 @@ class Command(BaseCommand):
             volMA60=volMA60,
             volMA145=volMA145,
             volCondition=volCondition,
-            priceCondition=priceCondition
+            priceCondition=priceCondition,
+            volContinueCondition=volContinueCondition
         )
 
     def handle(self, *args, **options):
@@ -156,7 +164,8 @@ class Command(BaseCommand):
                     block_st_reviews.append(stock_review)
                 else:
                     stock_statistics = self.cal_statistics(block_st_reviews)
-                    stock_statistics_arr.append(stock_statistics)
+                    if stock_statistics:
+                        stock_statistics_arr.append(stock_statistics)
                     block_st_reviews = [stock_review]
             else:
                 block_st_reviews.append(stock_review)
