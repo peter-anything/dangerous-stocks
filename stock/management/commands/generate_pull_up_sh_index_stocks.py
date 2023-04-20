@@ -30,12 +30,12 @@ class Command(BaseCommand):
             .exclude(code__istartswith='30') \
             .exclude(code__istartswith='688') \
             .exclude(name__startswith='*ST') \
-            .exclude(marketValue__lt=40) \
+            .exclude(marketValue__lt=450)\
             .all()
 
         industry_item_map = {}
         for candi_stock in stock_reviews:
-            if (candi_stock.now - candi_stock.open) / candi_stock.open < 0.025:
+            if (candi_stock.now - candi_stock.low) / candi_stock.low < 0.01:
                 continue
             industry_item = industry_item_map.get(candi_stock.industry, IndustryItem(candi_stock.industry, []))
             industry_item.stocks.append(candi_stock)
@@ -54,7 +54,7 @@ class Command(BaseCommand):
         if not os.path.exists(today_dir):
             os.makedirs(today_dir)
 
-        with open(os.path.join(today_dir, '盘中突然拉升所有股票-{}.csv'.format(now.strftime('%H时%M分%S秒'))), 'w') as f:
+        with open(os.path.join(today_dir, '盘中拉升大盘所有股票-{}.csv'.format(now.strftime('%H时%M分%S秒'))), 'w') as f:
             fw = csv.writer(f)
             fw.writerow(['股票代码', '股票名称', '股票市值', '股票行业', '股票概念', '涨幅'])
             first_count_eq_1 = False
