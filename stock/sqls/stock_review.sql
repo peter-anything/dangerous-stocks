@@ -37,3 +37,5 @@ ALTER TABLE stock_review ADD volumeBreakUpMa5 float default 0;
 ALTER TABLE stock_review ADD last2Up float default 0;
 ALTER TABLE stock_review ADD last3Up float default 0;
 ALTER TABLE stock_review ADD last5Up float default 0;
+
+ALTER TABLE stock_review_recent60 ALTER createdAt timestamp default current_timestamp;

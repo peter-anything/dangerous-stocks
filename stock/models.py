@@ -361,6 +361,7 @@ class StockStatistics(models.Model):
     volCondition = models.IntegerField(default=0)
     # 价格处于位置，>5 10-5, 20-10, 60-20, <60
     priceCondition = models.IntegerField(default=0)
+    volContinueCondition = models.IntegerField(default=0)
 
     class Meta:
         db_table = "stock_statistics"

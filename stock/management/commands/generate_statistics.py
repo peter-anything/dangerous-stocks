@@ -89,6 +89,13 @@ class Command(BaseCommand):
         priceCondition = 0
         volContinueCondition = 0
 
+        if latest_st_review.code == '002368':
+            for st in block_st_reviews[:20]:
+                print(st.createdAt)
+                print(st.now)
+
+            print(latest_st_review.code)
+
         # 1、小于40日线，低吸 2、突破五日线, 3、连续放量
         latest_3_review = block_st_reviews[:3]
         if latest_st_review.volume < volMA40:
@@ -147,11 +154,10 @@ class Command(BaseCommand):
         now = datetime.datetime.now()
 
         stock_reviews = StockReviewRecent60.objects \
-            .order_by('code', '-id') \
+            .order_by('code', '-createdAt') \
             .exclude(code__istartswith='30') \
             .exclude(code__istartswith='688') \
             .exclude(name__startswith='*ST') \
-            .exclude(marketValue__lt=40) \
             .all()
 
         pre_st_review = None
@@ -171,5 +177,7 @@ class Command(BaseCommand):
                 block_st_reviews.append(stock_review)
 
             pre_st_review = stock_review
+
+        StockStatistics.objects.all().delete()
 
         StockStatistics.objects.bulk_create(stock_statistics_arr)
