@@ -51,3 +51,34 @@ CREATE TABLE my_stock (
     visible smallint,
     index my_stocks_code_index(code)
 );
+
+CREATE TABLE top3_hot_stock (
+      id int primary key,
+      code char(16),
+      name varchar(64),
+      recentPrices text,
+      recentVolumes text,
+      adjustDays integer,
+      index top3_hot_stock_code_index(code)
+);
+
+CREATE TABLE top5_hot_stock (
+    id int primary key,
+    code char(16),
+    name varchar(64),
+    recentPrices text,
+    recentVolumes text,
+    adjustDays integer,
+    index top5_hot_stock_code_index(code)
+);
+
+
+CREATE TABLE top20_hot_stock (
+     id int primary key,
+     code char(16),
+     name varchar(64),
+     recentPrices text,
+     recentVolumes text,
+     adjustDays integer,
+    index top20_hot_stock_code_index(code)
+);

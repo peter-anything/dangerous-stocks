@@ -59,7 +59,7 @@ class Command(BaseCommand):
                 stock_review.high = high
                 stock_review.low = low
                 stock_review.now = now
-                stock_review.createdAt = curr_day + datetime.timedelta(days=-1)
+                stock_review.createdAt = curr_day
                 stock_review.marketValue = detail['总市值']
                 stock_review.volume = detail['成交量(手)']
                 stock_review.tradingMarketValue = detail['流通市值']

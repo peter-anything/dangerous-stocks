@@ -5,6 +5,7 @@ import os
 from django.core.management.base import BaseCommand
 
 from stock.models import Stock, StockReview
+from stock.util.stock_util import get_stock_statistics_map
 
 
 class IndustryItem(object):
@@ -41,8 +42,11 @@ class Command(BaseCommand):
         if now < mid_day:
             curr_day = mid_day
 
-        stock_reviews = StockReview.objects.filter(createdAt__gt=before_6_day)\
-            .order_by('code', '-id').exclude(name__startswith='*ST').all()
+        stock_reviews = StockReview.objects.filter(createdAt__gt=before_6_day) \
+            .order_by('code', '-createdAt') \
+            .exclude(code__istartswith='30') \
+            .exclude(code__istartswith='688') \
+            .exclude(name__startswith='*ST')
 
         pre_st_review = None
 
@@ -108,9 +112,12 @@ class Command(BaseCommand):
         if not os.path.exists(today_dir):
             os.makedirs(today_dir)
 
+        ss_map = get_stock_statistics_map(zero_today, zero_today + datetime.timedelta(hours=16))
+
+
         with open(os.path.join(today_dir, '收盘精选所有股票.csv'), 'w') as f:
             fw = csv.writer(f)
-            fw.writerow(['股票代码', '股票名称', '股票市值', '股票行业', '股票概念', '涨幅'])
+            fw.writerow(['股票代码', '股票名称', '股票市值', '股票行业', '股票概念', '涨幅', '盈亏比', '盈利', '亏损'])
             first_count_eq_1 = False
             for industry_item in industry_items:
                 stocks = industry_item.stocks
@@ -124,11 +131,15 @@ class Command(BaseCommand):
                     first_count_eq_1 = True
                 stocks = sorted(stocks, key=lambda x: x.growthRate)
                 for st in stocks:
-                    fw.writerow([str(st.code) + '_code', st.name, st.marketValue, st.industry, st.concepts, st.growthRate])
+                    fw.writerow([str(st.code) + '_code', st.name,
+                                 st.marketValue, st.industry,
+                                 st.concepts, st.growthRate,
+                                 ss_map[st.code].profitLossRatio, ss_map[st.code].profitRate,
+                                 ss_map[st.code].lossRate])
 
         with open(os.path.join(today_dir, '收盘精选推荐股票.csv'), 'w') as f:
             fw = csv.writer(f)
-            fw.writerow(['股票代码', '股票名称', '股票市值', '股票行业', '股票概念', '涨幅'])
+            fw.writerow(['股票代码', '股票名称', '股票市值', '股票行业', '股票概念', '涨幅', '盈亏比', '盈利', '亏损'])
             for industry_item in industry_items:
                 stocks = industry_item.stocks
 
@@ -137,6 +148,10 @@ class Command(BaseCommand):
 
                 stocks = sorted(stocks, key=lambda x: x.growthRate)
                 for st in stocks:
-                    if st.growthRate > 4:
+                    if ss_map[st.code].profitLossRatio < 1:
                         continue
-                    fw.writerow([str(st.code) + '_code', st.name, st.marketValue, st.industry, st.concepts, st.growthRate])
+                    fw.writerow([str(st.code) + '_code', st.name,
+                                 st.marketValue, st.industry,
+                                 st.concepts, st.growthRate,
+                                 ss_map[st.code].profitLossRatio, ss_map[st.code].profitRate,
+                                 ss_map[st.code].lossRate])

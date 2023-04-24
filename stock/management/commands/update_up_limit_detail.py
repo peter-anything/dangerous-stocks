@@ -16,7 +16,7 @@ class Command(BaseCommand):
         akshare_today = now.strftime("%Y%m%d")
 
         zero_today = now - timedelta(hours=now.hour, minutes=now.minute, seconds=now.second,
-                                              microseconds=now.microsecond)
+                                     microseconds=now.microsecond)
 
         # 午盘
         mid_day = zero_today + timedelta(hours=12, minutes=59)
@@ -38,8 +38,10 @@ class Command(BaseCommand):
         for stock in stock_em_zt_pool_df.values:
             id, code, name, growth_rate, now_price, tradingV, tradingMarketValue, marketValue, turnoverRate, closeMony, firstUpLimitTime, finalUpLimitTime, breakUpLimitCount, UpLimitStatistics, continuousUpLimitCount, industry = stock
             StockReview.objects.filter(code=code, createdAt__lt=end_t, createdAt__gt=start_t).update(
-                firstUpLimitTime='%s %s:%s:%s' % (today, firstUpLimitTime[0:2], firstUpLimitTime[2:4], firstUpLimitTime[4:6]),
-                finalUpLimitTime='%s %s:%s:%s' % (today, finalUpLimitTime[0:2], finalUpLimitTime[2:4], finalUpLimitTime[4:6]),
+                firstUpLimitTime='%s %s:%s:%s' % (
+                today, firstUpLimitTime[0:2], firstUpLimitTime[2:4], firstUpLimitTime[4:6]),
+                finalUpLimitTime='%s %s:%s:%s' % (
+                today, finalUpLimitTime[0:2], finalUpLimitTime[2:4], finalUpLimitTime[4:6]),
                 breakUpLimitCount=breakUpLimitCount,
                 continuousUpLimitCount=continuousUpLimitCount,
                 upDownStatistics=UpLimitStatistics,

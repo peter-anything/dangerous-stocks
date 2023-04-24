@@ -1,8 +1,15 @@
 import datetime
+import json
 
 from django.core.management.base import BaseCommand
 
 from stock.models import StockReviewRecent60, StockStatistics
+
+now = datetime.datetime.now()
+
+zero_today = now - datetime.timedelta(hours=now.hour, minutes=now.minute, seconds=now.second,
+                                      microseconds=now.microsecond)
+late_day = zero_today + datetime.timedelta(hours=15)
 
 
 class Command(BaseCommand):
@@ -133,6 +140,46 @@ class Command(BaseCommand):
         elif latest_st_review.now < priceMA60:
             priceCondition = 9
 
+        all_now_prices = [s.now for s in block_st_reviews][:20]
+        all_high_prices = [s.high for s in block_st_reviews][:20]
+        all_low_prices = [s.low for s in block_st_reviews][:20]
+        all_close_prices = [s.open for s in block_st_reviews][:20]
+        all_volumes = [s.volume for s in block_st_reviews][:20]
+
+        # 计算盈亏比, 从最近20天计算
+        now_prices = all_now_prices[:20]
+        sorted_now_prices = sorted(now_prices)
+        lowest_price = sorted_now_prices[0]
+        highest_price = sorted_now_prices[-1]
+        profitLossRatio = 0
+        profitRate = 0
+
+        recent3_now_prices = all_now_prices[:3]
+        highest3_price = max(recent3_now_prices)
+        recent5_now_prices = all_now_prices[:5]
+        highest5_price = max(recent5_now_prices)
+        recent10_now_prices = all_now_prices[:10]
+        highest10_price = max(recent10_now_prices)
+        recent20_now_prices = all_now_prices[:20]
+        highest20_price = max(recent20_now_prices)
+
+        last3UpRate = (recent3_now_prices[0] - recent3_now_prices[-1]) * 100 / recent3_now_prices[-1]
+        last5UpRate = (recent5_now_prices[0] - recent5_now_prices[-1]) * 100 / recent5_now_prices[-1]
+        last10UpRate = (recent10_now_prices[0] - recent10_now_prices[-1]) * 100 / recent10_now_prices[-1]
+        last20UpRate = (recent20_now_prices[0] - recent20_now_prices[-1]) * 100 / recent20_now_prices[-1]
+        breakUpRecent3HighestPrice = 1 if latest_st_review.now > highest3_price else 0
+        breakUpRecent5HighestPrice = 1 if latest_st_review.now > highest5_price else 0
+        breakUpRecent10HighestPrice = 1 if latest_st_review.now > highest10_price else 0
+        breakUpRecent20HighestPrice = 1 if latest_st_review.now > highest20_price else 0
+
+        if latest_st_review.code == '002594':
+            print('test')
+        lossRate = 0
+        if latest_st_review.now > lowest_price and latest_st_review.now < highest_price:
+            profitLossRatio = (highest_price - latest_st_review.now) / (latest_st_review.now - lowest_price)
+            profitRate = (highest_price - latest_st_review.now) * 100 / latest_st_review.now
+            lossRate = (lowest_price - latest_st_review.now) * 100 / latest_st_review.now
+
         return StockStatistics(
             code=latest_st_review.code,
             priceMA5=priceMA5,
@@ -147,7 +194,24 @@ class Command(BaseCommand):
             volMA145=volMA145,
             volCondition=volCondition,
             priceCondition=priceCondition,
-            volContinueCondition=volContinueCondition
+            volContinueCondition=volContinueCondition,
+            last3UpRate=last3UpRate,
+            last5UpRate=last5UpRate,
+            last10UpRate=last10UpRate,
+            last20UpRate=last20UpRate,
+            breakUpRecent3HighestPrice=breakUpRecent3HighestPrice,
+            breakUpRecent5HighestPrice=breakUpRecent5HighestPrice,
+            breakUpRecent10HighestPrice=breakUpRecent10HighestPrice,
+            breakUpRecent20HighestPrice=breakUpRecent20HighestPrice,
+            profitLossRatio=profitLossRatio,
+            profitRate=profitRate,
+            lossRate=lossRate,
+            recentNowPrices=json.dumps(all_now_prices),
+            recentHighPrices=json.dumps(all_high_prices),
+            recentLowPrices=json.dumps(all_low_prices),
+            recentClosePrices=json.dumps(all_close_prices),
+            recentVolumes=all_volumes,
+            createdAt=late_day
         )
 
     def handle(self, *args, **options):

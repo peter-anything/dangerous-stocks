@@ -51,9 +51,27 @@ CREATE TABLE stock_statistics (
                               volMA40 float,
                               volMA60 float,
                               volMA145 float,
+
                               priceCondition int default 0,
                               volCondition int default 0,
                               volContinueCondition int default 0,
+                              last3UpRate float default 0,
+                              last5UpRate float default 0,
+                              last10UpRate float default 0,
+                              last20UpRate float default 0,
+                              breakUpRecent3HighestPrice int default 0,
+                              breakUpRecent5HighestPrice int default 0,
+                              breakUpRecent10HighestPrice int default 0,
+                              breakUpRecent20HighestPrice int default 0,
+                              profitLossRatio float default 0,
+                              profitRate float default 0,
+                              lossRate float default 0,
+                              recentNowPrices text,
+                              recentHighPrices text,
+                              recentLowPrices text,
+                              recentClosePrices text,
+                              recentVolumes text,
+                              createdAt timestamp default current_timestamp,
 
                               index stock_statistics_code_index(code)
 );

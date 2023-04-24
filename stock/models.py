@@ -362,6 +362,23 @@ class StockStatistics(models.Model):
     # 价格处于位置，>5 10-5, 20-10, 60-20, <60
     priceCondition = models.IntegerField(default=0)
     volContinueCondition = models.IntegerField(default=0)
+    last3UpRate = models.FloatField()
+    last5UpRate = models.FloatField()
+    last10UpRate = models.FloatField()
+    last20UpRate = models.FloatField()
+    breakUpRecent3HighestPrice = models.IntegerField(default=0)
+    breakUpRecent5HighestPrice = models.IntegerField(default=0)
+    breakUpRecent10HighestPrice = models.IntegerField(default=0)
+    breakUpRecent20HighestPrice = models.IntegerField(default=0)
+    profitLossRatio = models.FloatField(default=0)
+    profitRate = models.FloatField(default=0)
+    lossRate = models.FloatField(default=0)
+    recentNowPrices = models.TextField(default='')
+    recentHighPrices = models.TextField(default='')
+    recentLowPrices = models.TextField(default='')
+    recentClosePrices = models.TextField(default='')
+    recentVolumes = models.TextField(default='')
+    createdAt = models.DateTimeField()
 
     class Meta:
         db_table = "stock_statistics"
