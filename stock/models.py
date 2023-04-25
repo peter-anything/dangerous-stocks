@@ -382,3 +382,45 @@ class StockStatistics(models.Model):
 
     class Meta:
         db_table = "stock_statistics"
+
+
+class IndustryBlock(models.Model):
+    # id = models.AutoField(primary_key=True, default=1)  # id 会自动创建,可以手动写入
+    code = models.CharField(max_length=16)
+    name = models.CharField(max_length=64)
+    now = models.FloatField()
+    high = models.FloatField()
+    low = models.FloatField()
+    open = models.FloatField()
+    close = models.FloatField()
+    growthRate = models.FloatField()
+    createdAt = models.DateTimeField()
+    inFlowFunds = models.FloatField()
+    turnover = models.FloatField()
+    volume = models.FloatField()
+    upCount = models.IntegerField()
+    downCount = models.IntegerField()
+
+    class Meta:
+        db_table = "industry_block"
+
+
+class ConceptBlock(models.Model):
+    # id = models.AutoField(primary_key=True, default=1)  # id 会自动创建,可以手动写入
+    code = models.CharField(max_length=16)
+    name = models.CharField(max_length=64)
+    now = models.FloatField()
+    high = models.FloatField()
+    low = models.FloatField()
+    open = models.FloatField()
+    close = models.FloatField()
+    growthRate = models.FloatField()
+    createdAt = models.DateTimeField()
+    inFlowFunds = models.FloatField()
+    turnover = models.FloatField()
+    volume = models.FloatField()
+    upCount = models.IntegerField()
+    downCount = models.IntegerField()
+
+    class Meta:
+        db_table = "concept_block"

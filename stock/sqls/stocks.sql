@@ -82,3 +82,41 @@ CREATE TABLE top20_hot_stock (
      adjustDays integer,
     index top20_hot_stock_code_index(code)
 );
+
+CREATE TABLE industry_block (
+    id int primary key auto_increment,
+    code char(16),
+    name varchar(64),
+    now float,
+    open float,
+    close float,
+    high float,
+    low float,
+    growthRate float,
+    createdAt timestamp default current_timestamp,
+    inFlowFunds float,
+    turnover float,
+    volume float,
+    upCount int,
+    downCount int,
+    index industry_block_code_index(code)
+);
+
+CREATE TABLE concept_block (
+    id int primary key auto_increment,
+    code char(16),
+    name varchar(64),
+    now float,
+    open float,
+    close float,
+    high float,
+    low float,
+    growthRate float,
+    createdAt timestamp default current_timestamp,
+    inFlowFunds float,
+    turnover float,
+    volume float,
+    upCount int,
+    downCount int,
+    index concept_block_code_index(code)
+);

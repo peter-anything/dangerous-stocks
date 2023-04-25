@@ -7,19 +7,22 @@ REQ_HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36'
 }
 
+
 def get_industry_detail(industry_detail_url):
     resp = requests.get(industry_detail_url, headers=REQ_HEADERS)
     soup = BeautifulSoup(resp.text, 'html.parser')
     heading_bref = soup.find_all(attrs={"class": "board-hq"})
     heading_detail = soup.find_all(attrs={"class": "board-infos"})[0]
     dls = heading_detail.find_all('dl')
+    industry_detail = {}
     for dl in dls:
         dt = dl.find_all('dt')[0]
         dd = dl.find_all('dd')[0]
         name = dt.text
         value = dd.text
-        print(name)
-        print(value)
+        industry_detail[name] = value
+
+    print(industry_detail)
 
 
 def get_all_industries():
