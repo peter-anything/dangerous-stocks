@@ -35,11 +35,14 @@ class Command(BaseCommand):
 
         industry_item_map = {}
         for candi_stock in stock_reviews:
-            if (candi_stock.now - candi_stock.low) / candi_stock.low < 0.01:
-                continue
-            industry_item = industry_item_map.get(candi_stock.industry, IndustryItem(candi_stock.industry, []))
-            industry_item.stocks.append(candi_stock)
-            industry_item_map[candi_stock.industry] = industry_item
+            open_up_rate = (candi_stock.now - candi_stock.open) * 100 / candi_stock.open
+            low_up_rate = (candi_stock.now - candi_stock.low)  * 100 / candi_stock.low
+            if open_up_rate >= 1 or low_up_rate >= 1:
+                industry_item = industry_item_map.get(candi_stock.industry, IndustryItem(candi_stock.industry, []))
+                candi_stock.open_up_rate = open_up_rate
+                candi_stock.low_up_rate = low_up_rate
+                industry_item.stocks.append(candi_stock)
+                industry_item_map[candi_stock.industry] = industry_item
         industry_items = list(industry_item_map.values())
 
         industry_items = sorted(industry_items, key=lambda x: len(x.stocks), reverse=True)
@@ -56,7 +59,7 @@ class Command(BaseCommand):
 
         with open(os.path.join(today_dir, '盘中拉升大盘所有股票-{}.csv'.format(now.strftime('%H时%M分%S秒'))), 'w') as f:
             fw = csv.writer(f)
-            fw.writerow(['股票代码', '股票名称', '股票市值', '股票行业', '股票概念', '涨幅'])
+            fw.writerow(['股票代码', '股票名称', '股票市值', '股票行业', '股票概念', '涨幅', '开盘拉升', '低点拉升',])
             first_count_eq_1 = False
             for industry_item in industry_items:
                 stocks = industry_item.stocks
@@ -71,5 +74,9 @@ class Command(BaseCommand):
                 stocks = sorted(stocks, key=lambda x: x.growthRate)
                 for st in stocks:
                     fw.writerow(
-                        [str(st.code) + '_code', st.name, st.marketValue, st.industry, st.concepts, st.growthRate])
+                        [str(st.code) + '_code', st.name,
+                         st.marketValue, st.industry,
+                         st.concepts, st.growthRate,
+                         st.open_up_rate, st.low_up_rate
+                         ])
                 fw.writerow([])

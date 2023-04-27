@@ -1,10 +1,12 @@
 import csv
 import datetime
+import json
 import os
 
 from django.core.management.base import BaseCommand
 
-from stock.models import HourStockReview
+from stock.conf.my_import_stocks import MY_IMPORTANT_STOCKS
+from stock.models import HourStockReview, Stock
 from stock.util.stock_util import get_stock_statistics_map
 
 
@@ -26,7 +28,21 @@ class Command(BaseCommand):
         zero_today = now - datetime.timedelta(hours=now.hour, minutes=now.minute, seconds=now.second,
                                               microseconds=now.microsecond)
 
+        all_stocks = Stock.objects \
+            .exclude(code__istartswith='300').exclude(code__istartswith='688').exclude(name__startswith='ST') \
+            .exclude(name__startswith='*ST') \
+            .filter(market='A股')
+
+        st_name_map = {}
+        for st in all_stocks:
+            st_name_map[st.name] = st.code
+
         ss_map = get_stock_statistics_map(zero_today, zero_today + datetime.timedelta(hours=16))
+
+        stock_codes = []
+        for industry, industry_detail in MY_IMPORTANT_STOCKS.items():
+            industry_codes = [st_name_map[name] for name in industry_detail['names']]
+            stock_codes.extend(industry_codes)
 
         stock_reviews = HourStockReview.objects.filter(createdAt__gt=zero_today) \
             .order_by('code', '-id') \
@@ -34,6 +50,7 @@ class Command(BaseCommand):
             .exclude(code__istartswith='688') \
             .exclude(name__startswith='*ST') \
             .exclude(marketValue__lt=40) \
+            .filter(code__in=stock_codes) \
             .all()
 
         industry_item_map = {}
@@ -53,13 +70,12 @@ class Command(BaseCommand):
 
         today_dir = os.path.join(daily_selected_stock_dir, today_str)
 
-
         if not os.path.exists(today_dir):
             os.makedirs(today_dir)
 
-        with open(os.path.join(today_dir, '盘中突然拉升所有股票-{}.csv'.format(now.strftime('%H时%M分%S秒'))), 'w') as f:
+        with open(os.path.join(today_dir, '盘中突然拉升重点观察所有股票-{}.csv'.format(now.strftime('%H时%M分%S秒'))), 'w') as f:
             fw = csv.writer(f)
-            fw.writerow(['股票代码', '股票名称', '股票市值', '股票行业', '股票概念', '涨幅', '盈亏比', '盈利', '亏损'])
+            fw.writerow(['股票代码', '股票名称', '股票市值', '股票行业', '股票概念', '涨幅', '五日盈亏比', '十日盈亏比', '二十日盈亏比'])
             first_count_eq_1 = False
             for industry_item in industry_items:
                 stocks = industry_item.stocks
@@ -73,6 +89,27 @@ class Command(BaseCommand):
                     first_count_eq_1 = True
                 stocks = sorted(stocks, key=lambda x: x.growthRate)
                 for st in stocks:
+                    ss = ss_map[st.code]
+                    recent_now_prices = json.loads(ss.recentNowPrices)
+                    recent_5_now_prices = recent_now_prices[:5]
+                    low_5_price = min(recent_5_now_prices)
+                    high_5_price = max(recent_5_now_prices)
+                    recent_10_now_prices = recent_now_prices[:10]
+                    low_10_price = min(recent_10_now_prices)
+                    high_10_price = max(recent_10_now_prices)
+                    recent_20_now_prices = recent_now_prices[:20]
+                    low_20_price = min(recent_20_now_prices)
+                    high_20_price = max(recent_20_now_prices)
+
+                    recent_5_profit_ratio = (high_5_price - st.now) * 100 / st.now
+                    recent_5_loss_ratio = (st.now - low_5_price) * 100 / st.now
+
+                    recent_10_profit_ratio = (high_10_price - st.now) * 100 / st.now
+                    recent_10_loss_ratio = (st.now - low_10_price) * 100 / st.now
+
+                    recent_20_profit_ratio = (high_20_price - st.now) * 100 / st.now
+                    recent_20_loss_ratio = (st.now - low_20_price) * 100 / st.now
+
                     # if st.code not in ss_map:
                     #     continue
                     # if ss_map[st.code].profitLossRatio < 1:
@@ -80,6 +117,7 @@ class Command(BaseCommand):
                     fw.writerow([str(st.code) + '_code', st.name,
                                  st.marketValue, st.industry,
                                  st.concepts, st.growthRate,
-                                 0, 0,
-                                 0])
+                                 '盈利：%s/亏损：%s' % (round(recent_5_profit_ratio, 2), round(recent_5_loss_ratio, 2)),
+                                 '盈利：%s/亏损：%s' % (round(recent_10_profit_ratio, 2), round(recent_10_loss_ratio, 2)),
+                                 '盈利：%s/亏损：%s' % (round(recent_20_profit_ratio, 2), round(recent_20_loss_ratio, 2))])
                 fw.writerow([])
