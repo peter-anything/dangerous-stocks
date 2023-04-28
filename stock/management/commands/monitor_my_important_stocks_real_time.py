@@ -7,7 +7,7 @@ import easyquotation
 from django.core.management.base import BaseCommand
 
 from stock.conf.my_import_stocks import MY_IMPORTANT_STOCKS
-from stock.models import Stock, StockStatistics, StockReview, RecommendStockInRealTime
+from stock.models import Stock, RecommendStockInRealTime
 from stock.util.stock_util import get_stock_statistics_map, gen_stock_review
 
 
