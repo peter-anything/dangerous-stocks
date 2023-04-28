@@ -25,6 +25,18 @@ class Command(BaseCommand):
 
         zero_today = now - datetime.timedelta(hours=now.hour, minutes=now.minute, seconds=now.second,
                                               microseconds=now.microsecond)
+        open_time = zero_today + datetime.timedelta(hours=9, minutes=30)
+
+        mid_open_time = zero_today + datetime.timedelta(hours=13, minutes=0)
+
+        # 午盘
+        mid_day = zero_today + datetime.timedelta(hours=12, minutes=59)
+
+        late_day = zero_today + datetime.timedelta(hours=15)
+
+        if not(now > open_time and now < late_day):
+            print('未开盘或者已经收盘')
+            return
 
         all_stocks = Stock.objects \
             .exclude(code__istartswith='300').exclude(code__istartswith='688').exclude(name__startswith='ST') \

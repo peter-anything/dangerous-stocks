@@ -34,3 +34,23 @@ CREATE TABLE manual_recommend_stock_price_history (
     bid1Money float,
     index manual_recommend_stock_price_history_code_index(code)
 );
+
+
+CREATE TABLE recommend_stock_in_real_time (
+      id int primary key auto_increment,
+      code char(16),
+      name varchar(64),
+      industry varchar(64),
+      marketValue float,
+      turnover float,
+      turnoverRate float,
+      createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      openHighRate float,
+      bottomUpRate float,
+      nowRate float,
+      canBuy smallint default 0,
+      recent5ProfitLossRatio text,
+      recent10ProfitLossRatio text,
+      recent20ProfitLossRatio text,
+      index recommend_stock_in_real_time_code_index(code)
+);

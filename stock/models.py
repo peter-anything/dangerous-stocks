@@ -424,3 +424,24 @@ class ConceptBlock(models.Model):
 
     class Meta:
         db_table = "concept_block"
+
+
+class RecommendStockInRealTime(models.Model):
+    # id = models.AutoField(primary_key=True, default=1)  # id 会自动创建,可以手动写入
+    code = models.CharField(max_length=16)  # 代码
+    name = models.CharField(max_length=64)  # 名称
+    industry = models.CharField(max_length=64)  # 名称
+    createdAt = models.DateTimeField()
+    marketValue = models.FloatField()  # 市值
+    turnoverRate = models.FloatField()  # 转手率
+    openHighRate = models.FloatField()  # 高开幅度
+    bottomUpRate = models.FloatField()  # 底部拉升幅度
+    nowRate = models.FloatField()
+    canBuy = models.SmallIntegerField(default=0)  # 是否异动
+    turnover = models.FloatField()
+    recent5ProfitLossRatio = models.TextField()
+    recent10ProfitLossRatio = models.TextField()
+    recent20ProfitLossRatio = models.TextField()
+
+    class Meta:
+        db_table = "recommend_stock_in_real_time"
